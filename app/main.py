@@ -367,23 +367,37 @@ async def generate_contact_email(contact_id: int, request: EmailGenerationReques
 @app.get("/")
 async def serve_ui():
     """Serve the main UI."""
-    return FileResponse(Path("static/index.html"))
+    static_path = Path("static/index.html")
+    if not static_path.exists():
+        # Fallback for Vercel deployment
+        return {"message": "UI not found. Please check static file configuration."}
+    return FileResponse(static_path)
 
 
 @app.get("/dashboard")
 async def serve_dashboard():
     """Serve the lead qualification dashboard."""
-    return FileResponse(Path("static/dashboard.html"))
+    static_path = Path("static/dashboard.html")
+    if not static_path.exists():
+        # Fallback for Vercel deployment
+        return {"message": "Dashboard not found. Please check static file configuration."}
+    return FileResponse(static_path)
 
 
 # Mount static files
 # Note: On Vercel, static files are served directly via vercel.json routes
 # This mount is kept for local development
-try:
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-except Exception:
-    # If static directory doesn't exist or mount fails, continue without it
-    pass
+import os
+if not os.getenv("VERCEL"):
+    # Only mount static files in local development
+    # On Vercel, static files are served via vercel.json routes
+    try:
+        static_path = Path("static")
+        if static_path.exists():
+            app.mount("/static", StaticFiles(directory="static"), name="static")
+    except Exception:
+        # If static directory doesn't exist or mount fails, continue without it
+        pass
 
 
 if __name__ == "__main__":

@@ -1,15 +1,36 @@
 """
 Vercel serverless function entry point for FastAPI app.
+Optimized for Vercel deployment with error handling.
 """
 import sys
+import os
 from pathlib import Path
 
 # Add parent directory to path so we can import app modules
-sys.path.insert(0, str(Path(__file__).parent.parent))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-from app.main import app
+# Set environment variables for Vercel
+os.environ.setdefault("VERCEL", "1")
 
-# Vercel Python runtime expects the app to be accessible as 'handler'
-# For FastAPI, we can use the ASGI app directly
-handler = app
+try:
+    from app.main import app
+    # Vercel Python runtime expects the app to be accessible as 'handler'
+    # For FastAPI, we can use the ASGI app directly
+    handler = app
+except Exception as e:
+    # Fallback error handler for deployment issues
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
+    
+    error_app = FastAPI()
+    
+    @error_app.exception_handler(Exception)
+    async def global_exception_handler(request, exc):
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Application initialization error: {str(e)}"}
+        )
+    
+    handler = error_app
 

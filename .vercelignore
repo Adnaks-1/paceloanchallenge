@@ -8,6 +8,9 @@ venv/
 env/
 ENV/
 .venv
+*.pyc
+*.pyo
+*.pyd
 
 # IDE
 .idea/
@@ -15,15 +18,21 @@ ENV/
 *.swp
 *.swo
 *~
+.project
+.classpath
+.settings/
 
 # OS
 .DS_Store
 Thumbs.db
+*.tmp
 
 # Environment
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 
 # Documentation
 *.md
@@ -34,16 +43,31 @@ DEPLOYMENT_OPTIMIZATION_PLAN.md
 lead_qualification_skills.md
 email_generation_skills.md
 skills.md
+*.log
+*.sqlite
+*.db
 
 # Git
 .git/
 .gitignore
+.gitattributes
 
 # Build artifacts
 dist/
 build/
 *.egg-info/
+.eggs/
+*.egg
 
-# Logs
-*.log
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Static assets (keep only what's needed)
+# Large images or assets that aren't used
+plglogo.png
+!static/plglogo.png
 
