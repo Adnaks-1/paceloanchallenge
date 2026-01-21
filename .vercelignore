@@ -68,6 +68,7 @@ htmlcov/
 
 # Static assets (keep only what's needed)
 # Large images or assets that aren't used
-plglogo.png
-!static/plglogo.png
+# Note: We need static/plglogo.png for the dashboard
+# plglogo.png
+# !static/plglogo.png
 

@@ -403,24 +403,39 @@ async def serve_dashboard():
 @app.get("/static/plglogo.png")
 async def serve_logo():
     """Serve the PLG logo."""
-    logo_path = Path("static/plglogo.png")
-    if logo_path.exists():
-        from fastapi.responses import Response
-        import mimetypes
-        mime_type, _ = mimetypes.guess_type(str(logo_path))
-        with open(logo_path, "rb") as f:
-            content = f.read()
-        return Response(content=content, media_type=mime_type or "image/png")
-    # Fallback: try root directory
-    logo_path = Path("plglogo.png")
-    if logo_path.exists():
-        from fastapi.responses import Response
-        import mimetypes
-        mime_type, _ = mimetypes.guess_type(str(logo_path))
-        with open(logo_path, "rb") as f:
-            content = f.read()
-        return Response(content=content, media_type=mime_type or "image/png")
-    raise HTTPException(status_code=404, detail="Logo not found")
+    import os
+    from fastapi.responses import Response
+    import mimetypes
+    
+    # Try multiple possible paths
+    possible_paths = [
+        Path("static/plglogo.png"),
+        Path("plglogo.png"),
+        Path(__file__).parent.parent / "static" / "plglogo.png",
+        Path(__file__).parent.parent / "plglogo.png",
+    ]
+    
+    # Also try relative to current working directory
+    cwd = Path(os.getcwd())
+    possible_paths.extend([
+        cwd / "static" / "plglogo.png",
+        cwd / "plglogo.png",
+    ])
+    
+    for logo_path in possible_paths:
+        try:
+            if logo_path.exists() and logo_path.is_file():
+                mime_type, _ = mimetypes.guess_type(str(logo_path))
+                with open(logo_path, "rb") as f:
+                    content = f.read()
+                return Response(content=content, media_type=mime_type or "image/png")
+        except Exception:
+            continue
+    
+    # If all paths fail, return a simple placeholder PNG
+    # This is a 1x1 transparent PNG
+    placeholder_png = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xdb\x00\x00\x00\x00IEND\xaeB`\x82'
+    return Response(content=placeholder_png, media_type="image/png")
 
 
 # Mount static files
