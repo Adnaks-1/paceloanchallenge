@@ -2620,12 +2620,18 @@
         function displayAnalysis(data, modalTitle, modalBody) {
             const analysis = data.analysis;
             const contactName = data.contact_name;
+            const contactId = data.contact_id;
             // Check if this result was cached (either from server cache or sessionStorage)
             const isCached = data.cached !== false; // Default to true if not explicitly false
 
             modalTitle.textContent = `AI Analysis: ${contactName}`;
 
             const levelClass = analysis.level.toLowerCase();
+            
+            // Parse contact name for email generator
+            const nameParts = contactName.trim().split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
 
             // Clean all text fields from markdown formatting
             const cleanSummary = stripMarkdown(analysis.summary || '');
@@ -2691,6 +2697,15 @@
                             <ul class="ai-list actions">
                                 ${cleanActions.map(a => `<li>${a}</li>`).join('')}
                             </ul>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                                <button class="generate-email-btn" onclick="closeModal(); openEmailGenerator(${contactId}, '${firstName.replace(/'/g, "\\'")}', '${lastName.replace(/'/g, "\\'")}', '')" style="margin-top: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Generate Outreach Email
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="ai-section">
