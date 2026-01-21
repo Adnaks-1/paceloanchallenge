@@ -377,7 +377,13 @@ async def serve_dashboard():
 
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Note: On Vercel, static files are served directly via vercel.json routes
+# This mount is kept for local development
+try:
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except Exception:
+    # If static directory doesn't exist or mount fails, continue without it
+    pass
 
 
 if __name__ == "__main__":
