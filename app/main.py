@@ -11,6 +11,7 @@ from app.session_store import session_store
 from app.crm_client import crm_client
 from app.lead_agent import analyze_lead
 from app.email_agent import generate_email, EmailFocusType
+from app.analysis_cache import get_cached_analysis, cache_analysis
 
 
 # FastAPI app
@@ -168,8 +169,15 @@ async def analyze_contact(contact_id: int):
     - Recommended actions for sales team
     - Talking points for outreach
     - Events attended (with sustainability event highlighting)
+    
+    Results are cached to avoid redundant API calls for the same contact.
     """
     try:
+        # Check cache first
+        cached_result = get_cached_analysis(contact_id)
+        if cached_result:
+            return cached_result
+        
         # Fetch contact details
         contact_data = await crm_client.get_contact(contact_id)
         contact = contact_data.get("data", contact_data)
@@ -187,11 +195,17 @@ async def analyze_contact(contact_id: int):
         # Run AI analysis with events data
         analysis = analyze_lead(contact, counts, events)
         
-        return {
+        result = {
             "contact_id": contact_id,
             "contact_name": f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip(),
-            "analysis": analysis
+            "analysis": analysis,
+            "cached": False
         }
+        
+        # Cache the result
+        cache_analysis(contact_id, result)
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
 

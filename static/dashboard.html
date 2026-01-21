@@ -62,6 +62,18 @@
         .header-logo {
             height: 40px;
             width: auto;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .header-logo:hover {
+            opacity: 0.8;
+        }
+
+        .header a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
         .header-text h1 {
@@ -1723,7 +1735,9 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <img src="/static/plglogo.png" alt="Pace Loan Group" class="header-logo">
+        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+            <img src="/static/plglogo.png" alt="Pace Loan Group" class="header-logo" onerror="this.style.display='none';">
+        </a>
         <div class="header-text">
             <h1>Lead Qualification Dashboard</h1>
             <p>Sales Team Tools</p>
@@ -2555,6 +2569,22 @@
 
             modal.classList.add('active');
             modalTitle.textContent = 'AI Lead Analysis';
+            
+            // Check if we have cached data (using sessionStorage for client-side cache check)
+            const cacheKey = `ai_analysis_${contactId}`;
+            const cachedData = sessionStorage.getItem(cacheKey);
+            
+            if (cachedData) {
+                try {
+                    const data = JSON.parse(cachedData);
+                    displayAnalysis(data, modalTitle, modalBody);
+                    return;
+                } catch (e) {
+                    // If cached data is invalid, continue with API call
+                    sessionStorage.removeItem(cacheKey);
+                }
+            }
+            
             modalBody.innerHTML = `
                 <div class="ai-loading">
                     <div class="loading-spinner"></div>
@@ -2572,36 +2602,54 @@
                 if (!response.ok) throw new Error(`API error: ${response.status}`);
 
                 const data = await response.json();
-                const analysis = data.analysis;
-                const contactName = data.contact_name;
-
-                modalTitle.textContent = `AI Analysis: ${contactName}`;
-
-                const levelClass = analysis.level.toLowerCase();
-
-                // Clean all text fields from markdown formatting
-                const cleanSummary = stripMarkdown(analysis.summary || '');
-                const cleanStrengths = (analysis.strengths || []).map(s => stripMarkdown(s));
-                const cleanConcerns = (analysis.concerns || []).map(c => stripMarkdown(c));
-                const cleanActions = (analysis.recommended_actions || []).map(a => stripMarkdown(a));
-                const cleanTalkingPoints = (analysis.talking_points || []).map(t => stripMarkdown(t));
-
+                
+                // Cache the result in sessionStorage
+                sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                
+                displayAnalysis(data, modalTitle, modalBody);
+            } catch (error) {
                 modalBody.innerHTML = `
-                    <div class="ai-analysis">
-                        <div class="ai-analysis-header">
-                            <span class="ai-badge">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
-                                    <circle cx="7.5" cy="14.5" r="1.5"/>
-                                    <circle cx="16.5" cy="14.5" r="1.5"/>
-                                </svg>
-                                AI Analysis
-                            </span>
-                            <div class="ai-score">
-                                <span class="ai-score-value">${analysis.score}/10</span>
-                                <span class="ai-level ${levelClass}">${analysis.level}</span>
-                            </div>
+                    <div class="ai-error">
+                        <p style="color: var(--error);">Error analyzing lead: ${error.message}</p>
+                        <button onclick="analyzeWithAI(${contactId})" class="btn-primary" style="margin-top: 1rem;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayAnalysis(data, modalTitle, modalBody) {
+            const analysis = data.analysis;
+            const contactName = data.contact_name;
+            const isCached = data.cached === false ? false : true;
+
+            modalTitle.textContent = `AI Analysis: ${contactName}`;
+
+            const levelClass = analysis.level.toLowerCase();
+
+            // Clean all text fields from markdown formatting
+            const cleanSummary = stripMarkdown(analysis.summary || '');
+            const cleanStrengths = (analysis.strengths || []).map(s => stripMarkdown(s));
+            const cleanConcerns = (analysis.concerns || []).map(c => stripMarkdown(c));
+            const cleanActions = (analysis.recommended_actions || []).map(a => stripMarkdown(a));
+            const cleanTalkingPoints = (analysis.talking_points || []).map(t => stripMarkdown(t));
+
+            modalBody.innerHTML = `
+                <div class="ai-analysis">
+                    <div class="ai-analysis-header">
+                        <span class="ai-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                <circle cx="7.5" cy="14.5" r="1.5"/>
+                                <circle cx="16.5" cy="14.5" r="1.5"/>
+                            </svg>
+                            AI Analysis
+                            ${isCached ? '<span style="font-size: 0.7rem; margin-left: 0.5rem; color: var(--text-muted); font-weight: normal;">(Cached)</span>' : ''}
+                        </span>
+                        <div class="ai-score">
+                            <span class="ai-score-value">${analysis.score}/10</span>
+                            <span class="ai-level ${levelClass}">${analysis.level}</span>
                         </div>
+                    </div>
                         
                         <div class="ai-summary">${cleanSummary}</div>
                         
@@ -2659,18 +2707,6 @@
                     
                     ${renderEventsSection(analysis)}
                 `;
-
-            } catch (error) {
-                console.error('Error:', error);
-                modalBody.innerHTML = `
-                    <div class="error-state">
-                        <p>Error analyzing lead: ${error.message}</p>
-                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                            Make sure the AI service is configured correctly.
-                        </p>
-                    </div>
-                `;
-            }
         }
 
         // Render Events Section
