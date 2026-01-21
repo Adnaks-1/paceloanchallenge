@@ -27,12 +27,6 @@
       "dest": "/api/index.py"
     }
   ],
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 300,
-      "memory": 1024
-    }
-  },
   "installCommand": "pip install --upgrade pip setuptools wheel && pip install --no-cache-dir --no-compile -r requirements.txt",
   "buildCommand": "echo 'Build complete'"
 }
