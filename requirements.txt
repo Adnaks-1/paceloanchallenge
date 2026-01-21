@@ -5,7 +5,8 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 
 # LLM & Agent (lazy loaded - only for chat endpoint)
-langchain-core==0.3.7
+# langgraph 0.2.53 requires langchain-core>=0.2.43,<0.3.0 OR langchain-core>0.3.14,<0.4.0
+langchain-core==0.3.15
 langgraph==0.2.53
 openai==1.54.0
 
