@@ -3,7 +3,6 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 pydantic-settings==2.5.2
-mangum==0.18.0
 
 # LLM & Agent (lazy loaded - only for chat endpoint)
 # langgraph 0.2.53 requires langchain-core>=0.2.43,<0.3.0 OR langchain-core>0.3.14,<0.4.0
