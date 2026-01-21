@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLG AI Tools | Pace Loan Group</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* PLG Brand Colors */
+            --plg-gold: #C9A227;
+            --plg-gold-light: #D4B44A;
+            --plg-gold-dark: #A8871F;
+            --plg-gold-glow: rgba(201, 162, 39, 0.15);
+            --plg-gray: #6B6B6B;
+            --plg-gray-light: #8A8A8A;
+            --plg-gray-dark: #4A4A4A;
+            
+            /* UI Colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-chat: #f1f3f4;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6B6B6B;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --user-bubble: #C9A227;
+            --ai-bubble: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 2rem;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-logo {
+            height: 45px;
+            width: auto;
+            cursor: pointer;
+        }
+
+        .header-text h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .header-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .header-nav {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--plg-gold);
+        }
+
+        /* ==================== */
+        /* HOME PAGE STYLES     */
+        /* ==================== */
+        .home-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .home-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .home-logo {
+            max-width: 180px;
+            margin-bottom: 1.5rem;
+        }
+
+        .home-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.03em;
+        }
+
+        .home-hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Tool Cards */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .tool-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            border-color: var(--plg-gold);
+            box-shadow: 0 8px 30px rgba(201, 162, 39, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .tool-card.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .tool-card.disabled:hover {
+            border-color: var(--border);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .tool-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+        }
+
+        .tool-card:first-child .tool-icon {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+        }
+
+        .tool-card:last-child .tool-icon {
+            background: linear-gradient(135deg, var(--plg-gray) 0%, var(--plg-gray-light) 100%);
+        }
+
+        .tool-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .tool-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .tool-badge.active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+        }
+
+        .tool-badge.coming-soon {
+            background: rgba(201, 162, 39, 0.1);
+            color: var(--plg-gold-dark);
+        }
+
+        .tool-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .tool-arrow {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.25s ease;
+        }
+
+        .tool-card:hover .tool-arrow {
+            opacity: 1;
+            right: 1.25rem;
+        }
+
+        .tool-card.disabled:hover .tool-arrow {
+            opacity: 0;
+        }
+
+        .tool-arrow svg {
+            width: 18px;
+            height: 18px;
+            color: var(--plg-gold);
+        }
+
+        /* ==================== */
+        /* CHAT PAGE STYLES     */
+        /* ==================== */
+        .chat-page {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .chat-page.active {
+            display: flex;
+        }
+
+        .home-page.hidden {
+            display: none !important;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--plg-gold);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .chat-header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chat-header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .chat-header-text h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+        }
+
+        .chat-header-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            gap: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message.ai .avatar {
+            background: var(--plg-gold);
+            color: #fff;
+        }
+
+        .message.user .avatar {
+            background: var(--plg-gray);
+            color: #fff;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .message.ai .bubble {
+            background: var(--ai-bubble);
+            border: 1px solid var(--border);
+            border-top-left-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        .message.user .bubble {
+            background: var(--plg-gold);
+            color: #fff;
+            border-top-right-radius: 4px;
+        }
+
+        .bubble p {
+            margin-bottom: 0.75rem;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message.ai .bubble strong {
+            color: var(--plg-gold-dark);
+            font-weight: 600;
+        }
+
+        .message.user .bubble strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .bubble ul, .bubble ol {
+            margin: 0.5rem 0 0.75rem 1.25rem;
+        }
+
+        .bubble li {
+            margin-bottom: 0.35rem;
+        }
+
+        .bubble code {
+            font-family: 'SF Mono', Monaco, monospace;
+            background: rgba(0,0,0,0.06);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Typing Indicator */
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 0.5rem 0;
+        }
+
+        .typing span {
+            width: 8px;
+            height: 8px;
+            background: var(--plg-gold);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing span:nth-child(1) { animation-delay: 0s; }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+        }
+
+        /* Welcome in chat */
+        .chat-welcome {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .chat-welcome h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-welcome p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .suggestion {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .suggestion:hover {
+            border-color: var(--plg-gold);
+            color: var(--plg-gold-dark);
+            background: var(--plg-gold-glow);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1.5rem 0 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 0.5rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--plg-gold);
+            box-shadow: 0 0 0 3px var(--plg-gold-glow);
+        }
+
+        #message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            resize: none;
+            min-height: 24px;
+            max-height: 150px;
+        }
+
+        #message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #send-btn {
+            background: var(--plg-gold);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #send-btn:hover {
+            background: var(--plg-gold-dark);
+        }
+
+        #send-btn:active {
+            transform: scale(0.98);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #send-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Scrollbar */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Lead Generation CTA */
+        .cta-container {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            animation: fadeIn 0.5s ease 0.3s both;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--plg-gold);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+        }
+
+        .cta-btn:hover {
+            background: var(--plg-gold-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 162, 39, 0.4);
+        }
+
+        .cta-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .cta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.6rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .home-hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .home-hero p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-logo {
+                height: 36px;
+            }
+
+            .header-text {
+                display: none;
+            }
+
+            .bubble {
+                max-width: 85%;
+            }
+
+            .suggestions {
+                flex-direction: column;
+            }
+
+            .suggestion {
+                text-align: left;
+            }
+
+            .cta-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tool-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <img src="/static/plglogo.png" alt="Pace Loan Group" class="header-logo" onclick="goHome()">
+        <div class="header-text">
+            <h1>Next-Gen Solutions</h1>
+            <p>Pace Loan Group</p>
+        </div>
+        <nav class="header-nav">
+            <a href="https://paceloangroup.com" target="_blank" class="nav-link">paceloangroup.com</a>
+        </nav>
+    </header>
+
+    <!-- HOME PAGE -->
+    <main class="home-container home-page" id="home-page">
+        <div class="home-hero">
+            <img src="/static/plglogo.png" alt="Pace Loan Group" class="home-logo">
+            <p>Intelligent solutions for C-PACE financing and sales enablement</p>
+        </div>
+
+        <div class="tools-grid">
+            <!-- C-PACE Expert Card -->
+            <div class="tool-card" onclick="openChat()">
+                <div class="tool-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h3>C-PACE Financing Expert</h3>
+                <p>Understand C-PACE financing in Minnesota, including capital stack strategies, lender consent, and eligibility requirements.</p>
+                
+            </div>
+
+            <!-- Lead Qualification Card -->
+            <div class="tool-card" onclick="openDashboard()">
+                <div class="tool-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 20V10"></path>
+                        <path d="M12 20V4"></path>
+                        <path d="M6 20v-6"></path>
+                    </svg>
+                </div>
+                <h3>Lead Qualification Tool</h3>
+                <p>AI-powered sales dashboard to qualify leads, analyze contacts, and streamline your pipeline with intelligent insights.</p>
+                <span class="tool-badge available">
+                </span>
+                <div class="tool-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CHAT PAGE -->
+    <div class="chat-page" id="chat-page">
+        <div class="chat-header">
+            <button class="back-btn" onclick="goHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </button>
+            <div class="chat-header-info">
+                <div class="chat-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <div class="chat-header-text">
+                    <h2>C-PACE Financing Expert</h2>
+                    <p>Ask anything about C-PACE in Minnesota</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="chat-welcome">
+                    <h3>How can I help you today?</h3>
+                    <p>Ask me anything about C-PACE financing in Minnesota</p>
+                    <div class="suggestions">
+                        <button class="suggestion" onclick="askQuestion(this.textContent)">What is C-PACE financing?</button>
+                        <button class="suggestion" onclick="askQuestion(this.textContent)">How does lender consent work?</button>
+                        <button class="suggestion" onclick="askQuestion(this.textContent)">What improvements are eligible?</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Ask about C-PACE financing..." 
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button id="send-btn" onclick="sendMessage()">
+                        Send
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        const homePage = document.getElementById('home-page');
+        const chatPage = document.getElementById('chat-page');
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Navigation
+        function openChat() {
+            homePage.classList.add('hidden');
+            chatPage.classList.add('active');
+            messageInput.focus();
+        }
+
+        function goHome() {
+            chatPage.classList.remove('active');
+            homePage.classList.remove('hidden');
+        }
+
+        function openDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function askQuestion(question) {
+            messageInput.value = question;
+            sendMessage();
+        }
+
+        function clearWelcome() {
+            const welcome = document.querySelector('.chat-welcome');
+            if (welcome) {
+                welcome.remove();
+            }
+        }
+
+        function addMessage(content, isUser = false, showCTA = false) {
+            clearWelcome();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = isUser ? 'You' : 'PLG';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerHTML = formatMessage(content);
+            
+            // Add CTA button for AI responses
+            if (!isUser && showCTA) {
+                const ctaContainer = document.createElement('div');
+                ctaContainer.className = 'cta-container';
+                ctaContainer.innerHTML = `
+                    <a href="https://paceloangroup.com/contact" target="_blank" rel="noopener" class="cta-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        Talk to a C-PACE Expert
+                    </a>
+                    <p class="cta-text">Real People / Real Capital ® — Get a financing package tailored to your project</p>
+                `;
+                bubble.appendChild(ctaContainer);
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+            
+            scrollToBottom();
+        }
+
+        function addTypingIndicator() {
+            clearWelcome();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = 'PLG';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+            
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function formatMessage(text) {
+            let formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            formatted = '<p>' + formatted + '</p>';
+            formatted = formatted.replace(/<p><\/p>/g, '');
+            
+            return formatted;
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            addMessage(message, true);
+
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+
+            addTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    sessionId = data.session_id;
+                    removeTypingIndicator();
+                    addMessage(data.response, false, true);
+                } else {
+                    removeTypingIndicator();
+                    addMessage('Sorry, something went wrong. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                removeTypingIndicator();
+                addMessage('Unable to connect to the server. Please check if the server is running.');
+            }
+
+            sendBtn.disabled = false;
+            messageInput.disabled = false;
+            messageInput.focus();
+        }
+    </script>
+</body>
+</html>

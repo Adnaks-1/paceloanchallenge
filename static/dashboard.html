@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Qualification Dashboard | Pace Loan Group</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --plg-gold: #C9A227;
+            --plg-gold-light: #D4B44A;
+            --plg-gold-dark: #A8871F;
+            --plg-gold-glow: rgba(201, 162, 39, 0.15);
+            --plg-gray: #6B6B6B;
+            --plg-gray-light: #8A8A8A;
+            --plg-gray-dark: #4A4A4A;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6B6B6B;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 2rem;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-text h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+        }
+
+        .header-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .header-nav {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--plg-gold);
+        }
+
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .page-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-primary);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .view-btn:hover {
+            color: var(--plg-gold);
+        }
+
+        .view-btn.active {
+            background: var(--plg-gold);
+            color: white;
+        }
+
+        .view-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Filters */
+        .filters-bar {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .priority-filter-bar {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .filter-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 0.55rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            min-width: 140px;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--plg-gold);
+        }
+
+        .filter-btn {
+            background: var(--plg-gold);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.55rem 1.25rem;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: var(--plg-gold-dark);
+        }
+
+        .filter-btn.secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .filter-btn.secondary:hover {
+            background: var(--border);
+        }
+
+        /* Cards Container - Horizontal Scroll */
+        .cards-container {
+            position: relative;
+        }
+
+        .cards-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 0.5rem 0 1.5rem;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cards-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .cards-scroll::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .cards-scroll::-webkit-scrollbar-thumb {
+            background: var(--plg-gold);
+            border-radius: 4px;
+        }
+
+        .cards-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--plg-gold-dark);
+        }
+
+        /* Power Card */
+        .power-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            min-width: 340px;
+            max-width: 340px;
+            flex-shrink: 0;
+            scroll-snap-align: start;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Priority Section */
+        .card-priority-section {
+            padding-bottom: 0.875rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 0.25rem;
+        }
+
+        .priority-indicator {
+            display: flex;
+            align-items: center;
+        }
+
+        .priority-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--plg-gray-dark);
+        }
+
+        .power-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .power-card:hover {
+            border-color: var(--plg-gold);
+            box-shadow: 0 4px 20px rgba(201, 162, 39, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .power-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Card Header */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .card-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(201, 162, 39, 0.25);
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.3rem;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.2rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .card-company {
+            font-size: 0.75rem;
+            color: var(--plg-gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        /* C-PACE Score Badge */
+        .cpace-score {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .cpace-score.high {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+        }
+
+        .cpace-score.medium {
+            background: linear-gradient(135deg, var(--plg-gold-light) 0%, var(--plg-gold) 100%);
+            color: white;
+        }
+
+        .cpace-score.low {
+            background: linear-gradient(135deg, var(--plg-gray) 0%, var(--plg-gray-dark) 100%);
+            color: white;
+        }
+
+        /* Card Tags */
+        .card-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tag-industry,
+        .tag-state,
+        .tag-size {
+            background: var(--bg-tertiary);
+            color: var(--plg-gray-dark);
+            border-color: var(--border);
+        }
+
+        /* Metrics Section */
+        .card-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .metric-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .metric-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .metric-label-left {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-align: left;
+        }
+
+        .metric-value-left {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.01em;
+            text-align: left;
+        }
+
+        .metric-value-text-left {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.01em;
+            text-align: left;
+        }
+
+        .metric-engagement-row {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .engagement-items {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .engagement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.65rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .engagement-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .engagement-count {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .metric-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.01em;
+        }
+
+        .metric-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-fill.gold {
+            background: linear-gradient(90deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+        }
+
+        .metric-fill.success {
+            background: linear-gradient(90deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+        }
+
+        .metric-fill.info {
+            background: linear-gradient(90deg, var(--plg-gray) 0%, var(--plg-gray-light) 100%);
+        }
+
+        .metric-fill.warning {
+            background: linear-gradient(90deg, var(--plg-gold-light) 0%, var(--plg-gold) 100%);
+        }
+
+        /* New Metric Styles */
+        .metric-company-size,
+        .metric-industry {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, rgba(201, 162, 39, 0.05) 100%);
+            border-radius: 10px;
+            color: var(--plg-gold);
+            flex-shrink: 0;
+            border: 1px solid rgba(201, 162, 39, 0.15);
+        }
+
+        .metric-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        .metric-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1;
+        }
+
+
+        .metric-value-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.01em;
+        }
+
+        .metric-simple {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .metric-engagement {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+        }
+
+        .metric-engagement-icons {
+            display: flex;
+            gap: 0.625rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .engagement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.7rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .engagement-item:hover {
+            background: var(--plg-gold-glow);
+            border-color: var(--plg-gold);
+            color: var(--plg-gold-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(201, 162, 39, 0.15);
+        }
+
+        .engagement-item svg {
+            width: 14px;
+            height: 14px;
+            color: var(--plg-gold);
+            stroke-width: 2.5;
+        }
+
+        .engagement-item span {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+            padding-top: 0.875rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0.25rem;
+        }
+
+        .card-contact {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 0.625rem 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .card-contact:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--plg-gold);
+        }
+
+        .card-contact svg {
+            width: 15px;
+            height: 15px;
+            color: var(--plg-gold);
+            flex-shrink: 0;
+        }
+
+        .card-action {
+            padding: 0.5rem 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            letter-spacing: 0.01em;
+        }
+
+        .card-action:hover {
+            background: var(--plg-gold);
+            color: white;
+            border-color: var(--plg-gold);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(201, 162, 39, 0.25);
+        }
+
+        .card-action.ai-btn {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            border-color: var(--plg-gold);
+            color: white;
+            box-shadow: 0 2px 4px rgba(201, 162, 39, 0.2);
+        }
+
+        .card-action.ai-btn:hover {
+            background: linear-gradient(135deg, var(--plg-gold-dark) 0%, #8a6d1a 100%);
+            border-color: var(--plg-gold-dark);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .card-action.email-btn {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            border-color: var(--plg-gold);
+            color: white;
+            box-shadow: 0 2px 4px rgba(201, 162, 39, 0.2);
+        }
+
+        .card-action.email-btn:hover {
+            background: linear-gradient(135deg, var(--plg-gold-dark) 0%, #8a6d1a 100%);
+            border-color: var(--plg-gold-dark);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.625rem;
+            flex-wrap: wrap;
+        }
+
+        /* Email Generation Styles */
+        .email-focus-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .focus-option {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .focus-option:hover {
+            border-color: var(--plg-gold-light);
+            background: var(--bg-secondary);
+        }
+
+        .focus-option.selected {
+            border-color: var(--plg-gold);
+            background: linear-gradient(135deg, #fffbeb 0%, var(--plg-gold-glow) 100%);
+        }
+
+        .focus-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .focus-option.disabled:hover {
+            border-color: var(--border);
+            background: var(--bg-primary);
+        }
+
+        .focus-option.disabled::after {
+            content: "No data available";
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--plg-gray);
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .focus-option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .focus-option-icon.industry {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+        }
+
+        .focus-option-icon.location {
+            background: linear-gradient(135deg, var(--plg-gold-light) 0%, var(--plg-gold) 100%);
+            color: white;
+        }
+
+        .focus-option-icon.events {
+            background: linear-gradient(135deg, var(--plg-gold-dark) 0%, var(--plg-gold) 100%);
+            color: white;
+        }
+
+        .focus-option-icon.social {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-light) 100%);
+            color: white;
+        }
+
+        .focus-option-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .focus-option h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.35rem;
+        }
+
+        .focus-option p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .generate-email-btn {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .generate-email-btn:hover {
+            background: linear-gradient(135deg, var(--plg-gold-dark) 0%, #8a6d1a 100%);
+            transform: translateY(-1px);
+        }
+
+        .generate-email-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generate-email-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Generated Email Display */
+        .email-result {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .email-header h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .email-header svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .copy-btn.copied {
+            background: var(--plg-gold);
+            border-color: var(--plg-gold);
+        }
+
+        .copy-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .email-subject {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .email-subject label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .email-subject p {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+        }
+
+        .email-body-container {
+            padding: 1.25rem;
+        }
+
+        .email-body-container label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-body {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+
+        .sales-notes {
+            background: linear-gradient(135deg, var(--plg-gold-glow) 0%, rgba(201, 162, 39, 0.12) 100%);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 8px;
+            padding: 0.875rem;
+            margin-top: 0.875rem;
+        }
+
+        .sales-notes h5 {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--plg-gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .sales-notes h5 svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .sales-notes p {
+            font-size: 0.75rem;
+            color: var(--plg-gold-dark);
+            line-height: 1.5;
+        }
+
+        /* AI Analysis Styles */
+        .ai-analysis {
+            background: linear-gradient(135deg, var(--plg-gold-glow) 0%, rgba(201, 162, 39, 0.08) 100%);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .ai-analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.875rem;
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+            padding: 0.3rem 0.65rem;
+            border-radius: 16px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .ai-badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .ai-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-score-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+        }
+
+        .ai-score-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .ai-level {
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .ai-level.strong {
+            background: var(--plg-gold-glow);
+            color: var(--plg-gold-dark);
+        }
+
+        .ai-level.moderate {
+            background: rgba(201, 162, 39, 0.15);
+            color: var(--plg-gold-dark);
+        }
+
+        .ai-level.weak {
+            background: rgba(107, 107, 107, 0.15);
+            color: var(--plg-gray-dark);
+        }
+
+        .ai-summary {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 0.875rem;
+            padding: 0.875rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .ai-section {
+            margin-bottom: 0.875rem;
+        }
+
+        .ai-section h5 {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--plg-gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .ai-section h5 svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .ai-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ai-list li {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            padding: 0.35rem 0;
+            padding-left: 1rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .ai-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.65rem;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--plg-gold);
+        }
+
+        .ai-list.strengths li::before {
+            background: var(--plg-gold);
+        }
+
+        .ai-list.concerns li::before {
+            background: var(--plg-gold-light);
+        }
+
+        .ai-list.actions li::before {
+            background: var(--plg-gray);
+        }
+
+        .ai-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            gap: 1rem;
+        }
+
+        .ai-loading .loading-spinner {
+            border-top-color: var(--plg-gold);
+        }
+
+        .ai-loading p {
+            color: var(--plg-gold-dark);
+            font-size: 0.85rem;
+        }
+
+        /* Events Section */
+        .events-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .events-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .events-header h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .events-header h4 svg {
+            width: 18px;
+            height: 18px;
+            color: var(--plg-gold);
+        }
+
+        .sustainability-badge {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+            padding: 0.3rem 0.65rem;
+            border-radius: 16px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .sustainability-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .events-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .event-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .event-card.sustainability {
+            border-color: rgba(201, 162, 39, 0.3);
+            background: linear-gradient(135deg, var(--plg-gold-glow) 0%, rgba(201, 162, 39, 0.1) 100%);
+        }
+
+        .event-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .event-icon.sustainability {
+            background: linear-gradient(135deg, var(--plg-gold) 0%, var(--plg-gold-dark) 100%);
+            color: white;
+        }
+
+        .event-icon.regular {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+        }
+
+        .event-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .event-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+            margin-bottom: 0.15rem;
+        }
+
+        .event-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .event-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .event-meta svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Loading & Error States */
+        .loading-state,
+        .error-state,
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--plg-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            color: var(--error);
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+        }
+
+        /* KPI Section */
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 1200px) {
+            .kpi-section {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .kpi-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.25s ease;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--plg-gold);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .kpi-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, rgba(201, 162, 39, 0.05) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--plg-gold);
+            flex-shrink: 0;
+            border: 1px solid rgba(201, 162, 39, 0.15);
+        }
+
+        .kpi-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke-width: 2;
+        }
+
+        .kpi-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--plg-gray-dark);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--plg-gold);
+            color: var(--plg-gold);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: var(--plg-gold);
+            border-color: var(--plg-gold);
+            color: #fff;
+        }
+
+        .page-info {
+            padding: 0 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--plg-gray-dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section h4 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .detail-item {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .detail-item label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-item span {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .raw-data {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+        }
+
+        /* Table View */
+        .table-container {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow-x: auto;
+            overflow-y: visible;
+            display: none;
+        }
+
+        .table-container.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            min-width: 800px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .data-table td:nth-child(3) {
+            min-width: 120px;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .data-table td:nth-child(3) .tag {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .data-table tr {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .data-table td:last-child {
+            white-space: nowrap;
+        }
+
+        .data-table td:last-child .card-action {
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-group input,
+            .filter-group select {
+                width: 100%;
+            }
+
+            .power-card {
+                min-width: 300px;
+                max-width: 300px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <img src="/static/plglogo.png" alt="Pace Loan Group" class="header-logo">
+        <div class="header-text">
+            <h1>Lead Qualification Dashboard</h1>
+            <p>Sales Team Tools</p>
+        </div>
+        <nav class="header-nav">
+            <a href="/" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Home
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="page-header">
+            <div>
+                <h2>Lead Qualification Dashboard</h2>
+                <p>Strategic lead qualification and engagement</p>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" id="cards-view-btn" onclick="setView('cards')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Cards
+                </button>
+                <button class="view-btn" id="table-view-btn" onclick="setView('table')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    Table
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Company</label>
+                <input type="text" id="filter-company" placeholder="Search company...">
+            </div>
+            <div class="filter-group">
+                <label>State</label>
+                <input type="text" id="filter-state" placeholder="e.g., CA" maxlength="2">
+            </div>
+            <div class="filter-group">
+                <label>Industry</label>
+                <input type="text" id="filter-industry" placeholder="Search industry...">
+            </div>
+            <div class="filter-group">
+                <label>Per Page</label>
+                <select id="filter-perpage">
+                    <option value="15">15</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <button class="filter-btn" onclick="applyFilters()">Apply</button>
+            <button class="filter-btn secondary" onclick="clearFilters()">Clear</button>
+        </div>
+
+        <!-- Priority Filter -->
+        <div class="priority-filter-bar">
+            <div class="filter-group">
+                <label>Priority</label>
+                <select id="filter-priority" onchange="applyPriorityFilter()">
+                    <option value="">All Priorities</option>
+                    <option value="high">High Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="low">Low Priority</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Cards View -->
+        <div class="cards-container" id="cards-container">
+            <div class="cards-scroll" id="cards-scroll">
+                <div class="loading-state" style="width: 100%;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading contacts...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-section" id="kpi-section">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Total States</div>
+                    <div class="kpi-value" id="kpi-states-count">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Total Industries</div>
+                    <div class="kpi-value" id="kpi-industries-count">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%); border-color: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                        <line x1="8" y1="10" x2="16" y2="10"></line>
+                    </svg>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Ineligible States</div>
+                    <div class="kpi-value" id="kpi-ineligible-states-count">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); border-color: rgba(16, 185, 129, 0.15); color: #10b981;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">High Priority</div>
+                    <div class="kpi-value" id="kpi-high-priority-count">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: linear-gradient(135deg, rgba(107, 107, 107, 0.1) 0%, rgba(107, 107, 107, 0.05) 100%); border-color: rgba(107, 107, 107, 0.15); color: var(--plg-gray);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Low Priority</div>
+                    <div class="kpi-value" id="kpi-low-priority-count">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-container" id="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Contact</th>
+                        <th>Company</th>
+                        <th>Industry</th>
+                        <th>State</th>
+                        <th>C-PACE Fit</th>
+                        <th>Revenue</th>
+                        <th>Employees</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <button class="page-btn" id="prev-btn" onclick="prevPage()">Previous</button>
+            <span class="page-info" id="page-info">Page 1 of 1</span>
+            <button class="page-btn" id="next-btn" onclick="nextPage()">Next</button>
+        </div>
+    </main>
+
+    <!-- Contact Detail Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modal-title">Contact Details</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading contact details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Generation Modal -->
+    <div class="modal-overlay" id="email-modal-overlay" onclick="closeEmailModal(event)">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 700px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #C9A227 0%, #A8871F 100%); color: white;">
+                <h3 id="email-modal-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:8px;">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    Write Personalized Email
+                </h3>
+                <button class="modal-close" onclick="closeEmailModal()" style="color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="email-modal-body">
+                <!-- Content will be dynamically loaded -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {};
+        let currentView = 'cards';
+        let contactsData = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContacts();
+            fetchAllContactsForKPIs(); // Load aggregate KPIs from all data
+        });
+
+        // View Toggle
+        function setView(view) {
+            currentView = view;
+            document.getElementById('cards-view-btn').classList.toggle('active', view === 'cards');
+            document.getElementById('table-view-btn').classList.toggle('active', view === 'table');
+            document.getElementById('cards-container').style.display = view === 'cards' ? 'block' : 'none';
+            document.getElementById('table-container').classList.toggle('active', view === 'table');
+        }
+
+        // Filters
+        function applyFilters() {
+            currentFilters = {
+                company: document.getElementById('filter-company').value.trim(),
+                state: document.getElementById('filter-state').value.trim().toUpperCase(),
+                industry: document.getElementById('filter-industry').value.trim(),
+                priority: document.getElementById('filter-priority').value,
+                per_page: document.getElementById('filter-perpage').value,
+            };
+            currentPage = 1;
+            loadContacts();
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-company').value = '';
+            document.getElementById('filter-state').value = '';
+            document.getElementById('filter-industry').value = '';
+            document.getElementById('filter-priority').value = '';
+            document.getElementById('filter-perpage').value = '25';
+            currentFilters = {};
+            currentPage = 1;
+            loadContacts();
+        }
+
+        // Apply priority filter automatically when changed
+        function applyPriorityFilter() {
+            const priority = document.getElementById('filter-priority').value;
+            currentFilters.priority = priority;
+            currentPage = 1;
+            loadContacts();
+        }
+
+        // Load Contacts
+        async function loadContacts() {
+            const cardsScroll = document.getElementById('cards-scroll');
+            const tableBody = document.getElementById('table-body');
+            
+            cardsScroll.innerHTML = `
+                <div class="loading-state" style="width: 100%;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading contacts...</p>
+                </div>
+            `;
+            tableBody.innerHTML = '';
+
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    per_page: currentFilters.per_page || 25,
+                });
+
+                if (currentFilters.company) params.append('company', currentFilters.company);
+                if (currentFilters.state) params.append('state', currentFilters.state);
+                if (currentFilters.industry) params.append('industry', currentFilters.industry);
+
+                const response = await fetch(`/api/contacts?${params}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                let filteredContacts = data.data || [];
+
+                // Filter by priority on client side
+                if (currentFilters.priority) {
+                    filteredContacts = filteredContacts.filter(contact => {
+                        const fitScore = contact.c_pace_fit_score || 0;
+                        const priority = fitScore >= 7 ? 'high' : fitScore >= 4 ? 'medium' : 'low';
+                        return priority === currentFilters.priority;
+                    });
+                }
+
+                contactsData = filteredContacts;
+
+                renderCards(contactsData);
+                renderTable(contactsData);
+                updateStats(data);
+                updatePagination(data.pagination);
+                // Note: Aggregate KPIs are updated separately via fetchAllContactsForKPIs()
+
+            } catch (error) {
+                console.error('Error:', error);
+                cardsScroll.innerHTML = `
+                    <div class="error-state" style="width: 100%;">
+                        <p>Error loading contacts: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Power Cards
+        function renderCards(contacts) {
+            const cardsScroll = document.getElementById('cards-scroll');
+
+            if (contacts.length === 0) {
+                cardsScroll.innerHTML = `
+                    <div class="empty-state" style="width: 100%;">
+                        <p>No contacts found matching your filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            cardsScroll.innerHTML = contacts.map(contact => {
+                const initials = `${(contact.first_name || '')[0] || ''}${(contact.last_name || '')[0] || ''}`.toUpperCase();
+                const fullName = `${contact.first_name || ''} ${contact.last_name || ''}`.trim();
+                
+                const revenue = parseFloat(contact.revenue) || 0;
+                const revenueFormatted = formatCurrency(revenue);
+                
+                const employees = contact.employee_count || 0;
+                
+                // C-PACE Fit Score
+                const fitScore = contact.c_pace_fit_score || 0;
+                
+                // Priority calculation based on fit score
+                const priority = fitScore >= 7 ? 'High Priority' : fitScore >= 4 ? 'Medium Priority' : 'Low Priority';
+                const priorityClass = fitScore >= 7 ? 'priority-high' : fitScore >= 4 ? 'priority-medium' : 'priority-low';
+                
+                // Company size
+                const companySize = contact.company_size || 'N/A';
+                
+                // Engagement counts (if available)
+                const socialCount = contact.social_posts_count || 0;
+                const blogCount = contact.blog_posts_count || 0;
+                const eventsCount = contact.events_count || 0;
+                const totalEngagement = socialCount + blogCount + eventsCount;
+
+                return `
+                    <div class="power-card" onclick="viewContact(${contact.id})">
+                        <div class="card-priority-section">
+                            <div class="priority-indicator ${priorityClass}">
+                                <span class="priority-label">${priority}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-header">
+                            <div class="card-avatar">${initials}</div>
+                            <div class="card-info">
+                                <div class="card-name">${fullName}</div>
+                                <div class="card-title">${contact.title || '-'}</div>
+                                <div class="card-company">${contact.company || '-'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-tags">
+                            <span class="tag tag-industry">${contact.industry || 'N/A'}</span>
+                            <span class="tag tag-state">${contact.state || 'N/A'}</span>
+                            <span class="tag tag-size">${companySize}</span>
+                        </div>
+                        
+                        <div class="card-metrics">
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-label-left">Revenue</span>
+                                    <span class="metric-value-left">${revenueFormatted}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label-left">Employees</span>
+                                    <span class="metric-value-left">${employees.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            ${totalEngagement > 0 ? `
+                            <div class="metric-row metric-engagement-row">
+                                <span class="metric-label-left">Engagement Activity</span>
+                                <div class="engagement-items">
+                                    ${socialCount > 0 ? `
+                                    <div class="engagement-item">
+                                        <span class="engagement-label">Social</span>
+                                        <span class="engagement-count">${socialCount}</span>
+                                    </div>
+                                    ` : ''}
+                                    ${blogCount > 0 ? `
+                                    <div class="engagement-item">
+                                        <span class="engagement-label">Blog</span>
+                                        <span class="engagement-count">${blogCount}</span>
+                                    </div>
+                                    ` : ''}
+                                    ${eventsCount > 0 ? `
+                                    <div class="engagement-item">
+                                        <span class="engagement-label">Events</span>
+                                        <span class="engagement-count">${eventsCount}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="card-footer">
+                            <div class="card-contact">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                ${contact.email ? contact.email.split('@')[0] + '@...' : 'No email'}
+                            </div>
+                            <div class="card-actions">
+                                <button class="card-action ai-btn" onclick="event.stopPropagation(); analyzeWithAI(${contact.id})" title="AI Analysis">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:2px;">
+                                        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                        <circle cx="7.5" cy="14.5" r="1.5"/>
+                                        <circle cx="16.5" cy="14.5" r="1.5"/>
+                                    </svg>
+                                    AI
+                                </button>
+                                <button class="card-action email-btn" onclick="event.stopPropagation(); openEmailGenerator(${contact.id}, '${(contact.first_name || '').replace(/'/g, "\\'")}', '${(contact.last_name || '').replace(/'/g, "\\'")}', '${(contact.company || '').replace(/'/g, "\\'")}')" title="Write Email">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:2px;">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Email
+                                </button>
+                                <button class="card-action" onclick="event.stopPropagation(); viewContact(${contact.id})">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Table
+        function renderTable(contacts) {
+            const tableBody = document.getElementById('table-body');
+
+            if (contacts.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No contacts found</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = contacts.map(contact => {
+                const fullName = `${contact.first_name || ''} ${contact.last_name || ''}`.trim();
+                const fitScore = contact.c_pace_fit_score || 0;
+                const fitClass = fitScore >= 7 ? 'high' : fitScore >= 4 ? 'medium' : 'low';
+                const revenue = parseFloat(contact.revenue) || 0;
+
+                return `
+                    <tr onclick="viewContact(${contact.id})">
+                        <td>
+                            <div style="font-weight: 600;">${fullName}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${contact.title || '-'}</div>
+                        </td>
+                        <td>${contact.company || '-'}</td>
+                        <td><span class="tag tag-industry">${contact.industry || 'N/A'}</span></td>
+                        <td><span class="tag tag-state">${contact.state || 'N/A'}</span></td>
+                        <td><span class="cpace-score ${fitClass}" style="position: static;">${fitScore}/10</span></td>
+                        <td>${formatCurrency(revenue)}</td>
+                        <td>${(contact.employee_count || 0).toLocaleString()}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button class="card-action ai-btn" onclick="event.stopPropagation(); analyzeWithAI(${contact.id})" title="AI Analysis" style="padding: 0.4rem 0.7rem; font-size: 0.7rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:2px;">
+                                        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                        <circle cx="7.5" cy="14.5" r="1.5"/>
+                                        <circle cx="16.5" cy="14.5" r="1.5"/>
+                                    </svg>
+                                    AI
+                                </button>
+                                <button class="card-action email-btn" onclick="event.stopPropagation(); openEmailGenerator(${contact.id}, '${(contact.first_name || '').replace(/'/g, "\\'")}', '${(contact.last_name || '').replace(/'/g, "\\'")}', '${(contact.company || '').replace(/'/g, "\\'")}')" title="Write Email" style="padding: 0.4rem 0.7rem; font-size: 0.7rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:2px;">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Email
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Update Stats (pagination tracking only)
+        function updateStats(data) {
+            const pagination = data.pagination || {};
+            totalPages = pagination.last_page || 1;
+            currentPage = pagination.current_page || 1;
+        }
+
+        // Fetch all contacts for aggregate KPIs
+        async function fetchAllContactsForKPIs() {
+            try {
+                let allContacts = [];
+                let page = 1;
+                let hasMore = true;
+                
+                // Fetch all pages
+                while (hasMore) {
+                    const params = new URLSearchParams({
+                        page: page,
+                        per_page: 100, // Max allowed
+                    });
+                    
+                    const response = await fetch(`/api/contacts?${params}`);
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    const contacts = data.data || [];
+                    allContacts = allContacts.concat(contacts);
+                    
+                    const pagination = data.pagination || {};
+                    hasMore = page < (pagination.last_page || 1);
+                    page++;
+                }
+                
+                updateAggregateKPIs(allContacts);
+            } catch (error) {
+                console.error('Error fetching all contacts for KPIs:', error);
+                // Fallback to current page data
+                updateKPIs(contactsData);
+            }
+        }
+
+        // Update KPI Cards from current filtered data
+        function updateKPIs(contacts) {
+            // Calculate unique states
+            const states = new Set();
+            contacts.forEach(contact => {
+                if (contact.state && contact.state.trim()) {
+                    states.add(contact.state.trim().toUpperCase());
+                }
+            });
+            const statesCount = states.size;
+            
+            // Calculate unique industries
+            const industries = new Set();
+            contacts.forEach(contact => {
+                if (contact.industry && contact.industry.trim()) {
+                    industries.add(contact.industry.trim());
+                }
+            });
+            const industriesCount = industries.size;
+            
+            // Update KPI displays
+            document.getElementById('kpi-states-count').textContent = statesCount;
+            document.getElementById('kpi-industries-count').textContent = industriesCount;
+        }
+
+        // Update Aggregate KPI Cards from ALL data
+        function updateAggregateKPIs(allContacts) {
+            // C-PACE state definitions
+            const cpaceActiveStates = ['CA', 'CO', 'CT', 'FL', 'GA', 'KY', 'MD', 'MI', 'MN', 'MO', 'NJ', 'NY', 'OH', 'OK', 'RI', 'TX', 'UT', 'VA', 'WI'];
+            const cpaceLimitedStates = ['AR', 'DE', 'ME', 'NE', 'NV', 'NM', 'OR', 'VT', 'DC'];
+            
+            // Calculate unique states
+            const states = new Set();
+            const ineligibleStates = new Set();
+            let highPriorityCount = 0;
+            let lowPriorityCount = 0;
+            
+            allContacts.forEach(contact => {
+                // Count states
+                if (contact.state && contact.state.trim()) {
+                    const state = contact.state.trim().toUpperCase();
+                    states.add(state);
+                    
+                    // Check if ineligible (not in active or limited lists)
+                    if (!cpaceActiveStates.includes(state) && !cpaceLimitedStates.includes(state)) {
+                        ineligibleStates.add(state);
+                    }
+                }
+                
+                // Count priorities
+                const fitScore = contact.c_pace_fit_score || 0;
+                if (fitScore >= 7) {
+                    highPriorityCount++;
+                } else if (fitScore < 4) {
+                    lowPriorityCount++;
+                }
+            });
+            
+            // Calculate unique industries
+            const industries = new Set();
+            allContacts.forEach(contact => {
+                if (contact.industry && contact.industry.trim()) {
+                    industries.add(contact.industry.trim());
+                }
+            });
+            
+            // Update all KPI displays
+            document.getElementById('kpi-states-count').textContent = states.size;
+            document.getElementById('kpi-industries-count').textContent = industries.size;
+            document.getElementById('kpi-ineligible-states-count').textContent = ineligibleStates.size;
+            document.getElementById('kpi-high-priority-count').textContent = highPriorityCount.toLocaleString();
+            document.getElementById('kpi-low-priority-count').textContent = lowPriorityCount.toLocaleString();
+        }
+
+        // Update Pagination
+        function updatePagination(pagination) {
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            pageInfo.textContent = `Page ${pagination.current_page || 1} of ${pagination.last_page || 1}`;
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadContacts();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadContacts();
+            }
+        }
+
+        // Format Currency
+        function formatCurrency(value, compact = false) {
+            if (compact && value >= 1000000) {
+                return '$' + (value / 1000000).toFixed(1) + 'M';
+            } else if (compact && value >= 1000) {
+                return '$' + (value / 1000).toFixed(0) + 'K';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            }).format(value);
+        }
+
+        // View Contact Details
+        async function viewContact(contactId) {
+            const modal = document.getElementById('modal-overlay');
+            const modalBody = document.getElementById('modal-body');
+            const modalTitle = document.getElementById('modal-title');
+
+            modal.classList.add('active');
+            modalBody.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading contact details...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/api/contacts/${contactId}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                const contact = data.data || data;
+                const counts = data.counts || {};
+
+                modalTitle.textContent = `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Contact Details';
+
+                const fitScore = contact.c_pace_fit_score || 0;
+                const fitClass = fitScore >= 7 ? 'high' : fitScore >= 4 ? 'medium' : 'low';
+
+                modalBody.innerHTML = `
+                    <div class="detail-section">
+                        <h4>Contact Information</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Email</label>
+                                <span>${contact.email || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Phone</label>
+                                <span>${contact.phone || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Title</label>
+                                <span>${contact.title || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Location</label>
+                                <span>${contact.location || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Company Details</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Company</label>
+                                <span>${contact.company || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Industry</label>
+                                <span>${contact.industry || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Company Size</label>
+                                <span>${contact.company_size || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Employees</label>
+                                <span>${(contact.employee_count || 0).toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Revenue</label>
+                                <span>${formatCurrency(parseFloat(contact.revenue) || 0)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>State</label>
+                                <span>${contact.state || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Lead Qualification</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>C-PACE Fit Score</label>
+                                <span class="cpace-score ${fitClass}" style="position: static; display: inline-block;">${fitScore}/10</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Social Posts</label>
+                                <span>${counts.social_posts || 0}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Blog Posts</label>
+                                <span>${counts.blog_posts || 0}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Events Attended</label>
+                                <span>${counts.events || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                modalBody.innerHTML = `
+                    <div class="error-state">
+                        <p>Error loading contact: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Analyze with AI
+        async function analyzeWithAI(contactId) {
+            const modal = document.getElementById('modal-overlay');
+            const modalBody = document.getElementById('modal-body');
+            const modalTitle = document.getElementById('modal-title');
+
+            modal.classList.add('active');
+            modalTitle.textContent = 'AI Lead Analysis';
+            modalBody.innerHTML = `
+                <div class="ai-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Analyzing lead with AI...</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Evaluating C-PACE qualification criteria</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/api/contacts/${contactId}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                const analysis = data.analysis;
+                const contactName = data.contact_name;
+
+                modalTitle.textContent = `AI Analysis: ${contactName}`;
+
+                const levelClass = analysis.level.toLowerCase();
+
+                modalBody.innerHTML = `
+                    <div class="ai-analysis">
+                        <div class="ai-analysis-header">
+                            <span class="ai-badge">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                    <circle cx="7.5" cy="14.5" r="1.5"/>
+                                    <circle cx="16.5" cy="14.5" r="1.5"/>
+                                </svg>
+                                AI Analysis
+                            </span>
+                            <div class="ai-score">
+                                <span class="ai-score-value">${analysis.score}/10</span>
+                                <span class="ai-level ${levelClass}">${analysis.level}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-summary">${analysis.summary}</div>
+                        
+                        <div class="ai-section">
+                            <h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Key Strengths
+                            </h5>
+                            <ul class="ai-list strengths">
+                                ${analysis.strengths.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="ai-section">
+                            <h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                Key Concerns
+                            </h5>
+                            <ul class="ai-list concerns">
+                                ${analysis.concerns.map(c => `<li>${c}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="ai-section">
+                            <h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                Recommended Actions
+                            </h5>
+                            <ul class="ai-list actions">
+                                ${analysis.recommended_actions.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="ai-section">
+                            <h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Talking Points for Sales
+                            </h5>
+                            <ul class="ai-list">
+                                ${analysis.talking_points.map(t => `<li>${t}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    ${renderEventsSection(analysis)}
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                modalBody.innerHTML = `
+                    <div class="error-state">
+                        <p>Error analyzing lead: ${error.message}</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                            Make sure the AI service is configured correctly.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Events Section
+        function renderEventsSection(analysis) {
+            const events = analysis.events_attended || [];
+            const sustainabilityCount = analysis.sustainability_events_count || 0;
+            
+            if (events.length === 0) {
+                return `
+                    <div class="events-section">
+                        <div class="events-header">
+                            <h4>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Events Attended
+                            </h4>
+                        </div>
+                        <div class="no-events">No events data available for this contact.</div>
+                    </div>
+                `;
+            }
+            
+            // Categorize events
+            const sustainabilityKeywords = [
+                'sustainability', 'sustainable', 'green', 'energy', 'renewable', 
+                'solar', 'wind', 'efficiency', 'carbon', 'climate', 'environmental',
+                'esg', 'clean', 'eco', 'conservation', 'net zero', 'decarbonization',
+                'leed', 'pace', 'c-pace', 'building performance', 'retrofit',
+                'hvac', 'lighting', 'insulation', 'smart building'
+            ];
+            
+            const isSustainabilityEvent = (event) => {
+                // Check multiple possible fields for event name/title
+                const eventName = event.name || event.title || event.event_name || event.event_title || '';
+                const eventDescription = event.description || event.event_description || '';
+                const eventType = event.type || event.category || '';
+                const text = (eventName + ' ' + eventDescription + ' ' + eventType).toLowerCase();
+                return sustainabilityKeywords.some(keyword => text.includes(keyword));
+            };
+            
+            const sustainabilityEvents = events.filter(isSustainabilityEvent);
+            const otherEvents = events.filter(e => !isSustainabilityEvent(e));
+            
+            let eventsHtml = `
+                <div class="events-section">
+                    <div class="events-header">
+                        <h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Events Attended (${events.length})
+                        </h4>
+                        ${sustainabilityEvents.length > 0 ? `
+                            <span class="sustainability-badge">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                                    <path d="M12 2a10 10 0 0 1 10 10"/>
+                                    <circle cx="12" cy="12" r="6"/>
+                                </svg>
+                                ${sustainabilityEvents.length} Sustainability Event${sustainabilityEvents.length > 1 ? 's' : ''} (+Score Boost)
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class="events-grid">
+            `;
+            
+            // Render sustainability events first
+            sustainabilityEvents.forEach(event => {
+                eventsHtml += renderEventCard(event, true);
+            });
+            
+            // Then render other events
+            otherEvents.slice(0, 5).forEach(event => {
+                eventsHtml += renderEventCard(event, false);
+            });
+            
+            if (otherEvents.length > 5) {
+                eventsHtml += `<div class="no-events">+ ${otherEvents.length - 5} more events</div>`;
+            }
+            
+            eventsHtml += `
+                    </div>
+                </div>
+            `;
+            
+            return eventsHtml;
+        }
+        
+        function renderEventCard(event, isSustainability) {
+            // Check multiple possible fields for event name
+            const eventName = event.name || event.title || event.event_name || event.event_title || 
+                             event.description || event.event_description || 'Unnamed Event';
+            const eventDate = event.date || event.event_date || event.start_date || event.created_at || '';
+            const eventLocation = event.location || event.city || event.venue || '';
+            const eventType = event.type || event.category || '';
+            
+            // If we only have description and it's long, use a truncated version
+            let displayName = eventName;
+            if (eventName === event.description || eventName === event.event_description) {
+                // Truncate long descriptions
+                if (eventName.length > 60) {
+                    displayName = eventName.substring(0, 60) + '...';
+                }
+            }
+            
+            return `
+                <div class="event-card ${isSustainability ? 'sustainability' : ''}">
+                    <div class="event-icon ${isSustainability ? 'sustainability' : 'regular'}">
+                        ${isSustainability ? `
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                            </svg>
+                        ` : `
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                            </svg>
+                        `}
+                    </div>
+                    <div class="event-details">
+                        <div class="event-name">${displayName}</div>
+                        <div class="event-meta">
+                            ${eventDate ? `
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    ${formatEventDate(eventDate)}
+                                </span>
+                            ` : ''}
+                            ${eventLocation ? `
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                    ${eventLocation}
+                                </span>
+                            ` : ''}
+                            ${eventType ? `<span>${eventType}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function formatEventDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch {
+                return dateStr;
+            }
+        }
+
+        // Close Modal
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeEmailModal();
+            }
+        });
+
+        // Email Generation Functions
+        let currentEmailContactId = null;
+        let currentEmailContactName = '';
+        let selectedFocusType = null;
+        let contactData = null;
+
+        async function openEmailGenerator(contactId, firstName, lastName, company) {
+            currentEmailContactId = contactId;
+            currentEmailContactName = `${firstName} ${lastName}`.trim();
+            selectedFocusType = null;
+
+            const modal = document.getElementById('email-modal-overlay');
+            const modalBody = document.getElementById('email-modal-body');
+            const modalTitle = document.getElementById('email-modal-title');
+
+            modalTitle.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:8px;">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Write Email for ${currentEmailContactName}
+            `;
+
+            modal.classList.add('active');
+
+            // Show loading state
+            modalBody.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading contact data...</p>
+                </div>
+            `;
+
+            try {
+                // Fetch contact data to check counts
+                const response = await fetch(`/api/contacts/${contactId}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                
+                const data = await response.json();
+                contactData = data;
+                const contact = data.data || data;
+                const counts = data.counts || {};
+                
+                // Get counts for validation
+                const eventsCount = contact.events_count || counts.events || 0;
+                const socialPostsCount = contact.social_posts_count || counts.social_posts || 0;
+                const blogPostsCount = contact.blog_posts_count || counts.blog_posts || 0;
+                const totalSocialContent = socialPostsCount + blogPostsCount;
+
+                // Determine available focus types
+                const availableFocuses = [];
+                if (contact.industry) availableFocuses.push('industry');
+                if (contact.state || contact.location) availableFocuses.push('location');
+                if (eventsCount > 0) availableFocuses.push('events');
+                if (totalSocialContent > 0) availableFocuses.push('social');
+
+                // Build suggestion message
+                let suggestionMessage = '';
+                if (availableFocuses.length === 0) {
+                    suggestionMessage = '<p style="color: var(--text-warning, #f59e0b); font-size: 0.85rem; margin-top: 0.5rem;"><strong>Note:</strong> This contact has limited data. Industry or Location focus may work best.</p>';
+                } else if (availableFocuses.length < 4) {
+                    const focusLabels = {
+                        'industry': 'Industry',
+                        'location': 'Location',
+                        'events': 'Events',
+                        'social': 'Social Media'
+                    };
+                    const availableLabels = availableFocuses.map(f => focusLabels[f]).join(', ');
+                    suggestionMessage = `<p style="color: var(--plg-gold-dark); font-size: 0.85rem; margin-top: 0.5rem;"><strong>Recommended:</strong> ${availableLabels} focus ${availableFocuses.length === 1 ? 'is' : 'are'} available for this contact.</p>`;
+                }
+
+                modalBody.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Choose an email focus to generate a personalized outreach email for <strong>${currentEmailContactName}</strong> at <strong>${company}</strong>.
+                        </p>
+                        ${suggestionMessage}
+                    </div>
+
+                    <div class="email-focus-selector">
+                        <div class="focus-option ${!contact.industry ? 'disabled' : ''}" data-focus="industry" onclick="${contact.industry ? "selectFocusType('industry')" : ''}">
+                            <div class="focus-option-icon industry">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </div>
+                            <h4>Industry Focus</h4>
+                            <p>Highlight how C-PACE benefits their specific industry with relevant use cases and ROI.</p>
+                        </div>
+
+                        <div class="focus-option ${!contact.state && !contact.location ? 'disabled' : ''}" data-focus="location" onclick="${(contact.state || contact.location) ? "selectFocusType('location')" : ''}">
+                            <div class="focus-option-icon location">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                            </div>
+                            <h4>Location Focus</h4>
+                            <p>Reference C-PACE developments and opportunities in their state or region.</p>
+                        </div>
+
+                        <div class="focus-option ${eventsCount === 0 ? 'disabled' : ''}" data-focus="events" onclick="${eventsCount > 0 ? "selectFocusType('events')" : ''}">
+                            <div class="focus-option-icon events">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <h4>Events Focus</h4>
+                            <p>Reference events they've attended and connect those interests to C-PACE.</p>
+                        </div>
+
+                        <div class="focus-option ${totalSocialContent === 0 ? 'disabled' : ''}" data-focus="social" onclick="${totalSocialContent > 0 ? "selectFocusType('social')" : ''}">
+                            <div class="focus-option-icon social">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                                </svg>
+                            </div>
+                            <h4>Social Media Focus</h4>
+                            <p>Reference their recent posts and content to show genuine engagement.</p>
+                        </div>
+                    </div>
+
+                    <button class="generate-email-btn" id="generate-email-btn" onclick="generateEmail()" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        Select a focus type above
+                    </button>
+                `;
+            } catch (error) {
+                console.error('Error loading contact data:', error);
+                modalBody.innerHTML = `
+                    <div class="error-state">
+                        <p>Error loading contact data: ${error.message}</p>
+                        <button class="generate-email-btn" onclick="closeEmailModal()" style="margin-top: 1rem;">Close</button>
+                    </div>
+                `;
+            }
+        }
+
+        function selectFocusType(focusType) {
+            if (!contactData) return;
+
+            const contact = contactData.data || contactData;
+            const counts = contactData.counts || {};
+            
+            // Validate data availability for the selected focus
+            let hasData = false;
+            let suggestionMessage = '';
+
+            if (focusType === 'events') {
+                const eventsCount = contact.events_count || counts.events || 0;
+                hasData = eventsCount > 0;
+                if (!hasData) {
+                    suggestionMessage = 'This contact has no events data. Consider using Industry or Location focus instead.';
+                }
+            } else if (focusType === 'social') {
+                const socialPostsCount = contact.social_posts_count || counts.social_posts || 0;
+                const blogPostsCount = contact.blog_posts_count || counts.blog_posts || 0;
+                hasData = (socialPostsCount + blogPostsCount) > 0;
+                if (!hasData) {
+                    suggestionMessage = 'This contact has no social media posts. Consider using Industry or Location focus instead.';
+                }
+            } else if (focusType === 'industry') {
+                hasData = !!contact.industry;
+                if (!hasData) {
+                    suggestionMessage = 'This contact has no industry data. Consider using Location focus instead.';
+                }
+            } else if (focusType === 'location') {
+                hasData = !!(contact.state || contact.location);
+                if (!hasData) {
+                    suggestionMessage = 'This contact has no location data. Consider using Industry focus instead.';
+                }
+            }
+
+            // If no data, show message and don't allow selection
+            if (!hasData) {
+                const modalBody = document.getElementById('email-modal-body');
+                const existingMessage = modalBody.querySelector('p[style*="color: var(--plg-gold-dark)"]') || 
+                                       modalBody.querySelector('p[style*="color: var(--text-warning)"]');
+                if (existingMessage) {
+                    existingMessage.innerHTML = `<strong>⚠️ ${suggestionMessage}</strong>`;
+                    existingMessage.style.color = 'var(--text-warning, #f59e0b)';
+                } else {
+                    const messageDiv = modalBody.querySelector('div[style*="margin-bottom: 1rem"]');
+                    if (messageDiv) {
+                        messageDiv.innerHTML += `<p style="color: var(--text-warning, #f59e0b); font-size: 0.85rem; margin-top: 0.5rem;"><strong>⚠️ ${suggestionMessage}</strong></p>`;
+                    }
+                }
+                return;
+            }
+
+            selectedFocusType = focusType;
+
+            // Update UI to show selection
+            document.querySelectorAll('.focus-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`.focus-option[data-focus="${focusType}"]`).classList.add('selected');
+
+            // Enable the generate button
+            const btn = document.getElementById('generate-email-btn');
+            btn.disabled = false;
+
+            const focusLabels = {
+                'industry': 'Generate Industry-Focused Email',
+                'location': 'Generate Location-Focused Email',
+                'events': 'Generate Events-Focused Email',
+                'social': 'Generate Social Media-Focused Email'
+            };
+
+            btn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                ${focusLabels[focusType]}
+            `;
+        }
+
+        async function generateEmail() {
+            if (!selectedFocusType || !currentEmailContactId || !contactData) return;
+
+            // Final validation before generating
+            const contact = contactData.data || contactData;
+            const counts = contactData.counts || {};
+            let hasData = false;
+
+            if (selectedFocusType === 'events') {
+                const eventsCount = contact.events_count || counts.events || 0;
+                hasData = eventsCount > 0;
+            } else if (selectedFocusType === 'social') {
+                const socialPostsCount = contact.social_posts_count || counts.social_posts || 0;
+                const blogPostsCount = contact.blog_posts_count || counts.blog_posts || 0;
+                hasData = (socialPostsCount + blogPostsCount) > 0;
+            } else if (selectedFocusType === 'industry') {
+                hasData = !!contact.industry;
+            } else if (selectedFocusType === 'location') {
+                hasData = !!(contact.state || contact.location);
+            }
+
+            if (!hasData) {
+                const modalBody = document.getElementById('email-modal-body');
+                const availableFocuses = [];
+                if (contact.industry) availableFocuses.push('Industry');
+                if (contact.state || contact.location) availableFocuses.push('Location');
+                if ((contact.events_count || counts.events || 0) > 0) availableFocuses.push('Events');
+                if (((contact.social_posts_count || counts.social_posts || 0) + (contact.blog_posts_count || counts.blog_posts || 0)) > 0) availableFocuses.push('Social Media');
+
+                modalBody.innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 2rem;">
+                        <p style="color: var(--text-warning, #f59e0b); font-size: 1rem; margin-bottom: 1rem;">
+                            <strong>⚠️ Cannot generate email with ${selectedFocusType} focus</strong>
+                        </p>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                            This contact has no data available for the selected focus type.
+                        </p>
+                        ${availableFocuses.length > 0 ? `
+                            <p style="color: var(--text-primary); font-size: 0.9rem; margin-bottom: 1rem;">
+                                <strong>Available focus types:</strong> ${availableFocuses.join(', ')}
+                            </p>
+                        ` : ''}
+                        <button class="generate-email-btn" onclick="openEmailGenerator(${currentEmailContactId}, '${currentEmailContactName.split(' ')[0]}', '${currentEmailContactName.split(' ').slice(1).join(' ')}', '')" style="max-width: 200px;">
+                            Choose Different Focus
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const modalBody = document.getElementById('email-modal-body');
+
+            modalBody.innerHTML = `
+                <div class="ai-loading" style="padding: 3rem;">
+                    <div class="loading-spinner" style="border-top-color: var(--plg-gold);"></div>
+                    <p style="color: var(--plg-gold-dark);">Generating personalized email...</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Crafting the perfect message for ${currentEmailContactName}</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/api/contacts/${currentEmailContactId}/generate-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ focus_type: selectedFocusType })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.detail || errorData.message || `API error: ${response.status}`;
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                const email = data.email;
+                const contactEmail = data.contact_email;
+
+                const focusLabels = {
+                    'industry': 'Industry Focus',
+                    'location': 'Location Focus',
+                    'events': 'Events Focus',
+                    'social': 'Social Media Focus'
+                };
+
+                modalBody.innerHTML = `
+                    <div class="email-result">
+                        <div class="email-header">
+                            <h4>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Email Generated - ${focusLabels[selectedFocusType]}
+                            </h4>
+                            <button class="copy-btn" onclick="copyEmailToClipboard()" id="copy-email-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy All
+                            </button>
+                        </div>
+                        
+                        <div class="email-subject">
+                            <label>To: ${contactEmail || 'Contact Email'}</label>
+                        </div>
+                        
+                        <div class="email-subject">
+                            <label>Subject Line</label>
+                            <p id="email-subject-text">${email.subject_line}</p>
+                        </div>
+                        
+                        <div class="email-body-container">
+                            <label>Email Body</label>
+                            <div class="email-body" id="email-body-text">${email.email_body}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sales-notes">
+                        <h5>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            Notes for Sales Rep
+                        </h5>
+                        <p>${email.sales_notes}</p>
+                    </div>
+                    
+                    <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem;">
+                        <button class="generate-email-btn" onclick="openEmailGenerator(${currentEmailContactId}, '${currentEmailContactName.split(' ')[0]}', '${currentEmailContactName.split(' ').slice(1).join(' ')}', '')" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                            Try Different Focus
+                        </button>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = error.message || 'Unknown error occurred';
+                const isValidationError = errorMessage.includes('Cannot generate') || errorMessage.includes('has no');
+                
+                modalBody.innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 2rem;">
+                        <p style="color: ${isValidationError ? 'var(--text-warning, #f59e0b)' : 'var(--text-error, #ef4444)'}; font-size: 1rem; margin-bottom: 1rem;">
+                            <strong>${isValidationError ? '⚠️' : '❌'} ${errorMessage}</strong>
+                        </p>
+                        ${isValidationError ? `
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                                Please select a different focus type that has available data.
+                            </p>
+                        ` : `
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                                Please try again or select a different focus type.
+                            </p>
+                        `}
+                        <button class="generate-email-btn" style="margin-top: 1rem; max-width: 200px;" onclick="openEmailGenerator(${currentEmailContactId}, '${currentEmailContactName.split(' ')[0]}', '${currentEmailContactName.split(' ').slice(1).join(' ')}', '')">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function copyEmailToClipboard() {
+            const subject = document.getElementById('email-subject-text').textContent;
+            const body = document.getElementById('email-body-text').textContent;
+            
+            const fullEmail = `Subject: ${subject}\n\n${body}`;
+            
+            navigator.clipboard.writeText(fullEmail).then(() => {
+                const btn = document.getElementById('copy-email-btn');
+                btn.classList.add('copied');
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Copied!
+                `;
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy All
+                    `;
+                }, 2000);
+            });
+        }
+
+        function closeEmailModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('email-modal-overlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
