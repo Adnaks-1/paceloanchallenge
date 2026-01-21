@@ -367,21 +367,36 @@ async def generate_contact_email(contact_id: int, request: EmailGenerationReques
 @app.get("/")
 async def serve_ui():
     """Serve the main UI."""
+    import os
+    # On Vercel, static files are served via vercel.json routes
+    # This endpoint is mainly for API health checks
+    if os.getenv("VERCEL"):
+        return {"message": "API is running", "status": "healthy", "ui": "Visit /dashboard for the dashboard"}
+    
     static_path = Path("static/index.html")
-    if not static_path.exists():
-        # Fallback for Vercel deployment
-        return {"message": "UI not found. Please check static file configuration."}
-    return FileResponse(static_path)
+    if static_path.exists():
+        return FileResponse(static_path)
+    return {"message": "UI not found. Please check static file configuration."}
 
 
 @app.get("/dashboard")
 async def serve_dashboard():
     """Serve the lead qualification dashboard."""
+    import os
+    # On Vercel, static files are served via vercel.json routes
+    # This endpoint redirects or serves the dashboard
+    if os.getenv("VERCEL"):
+        # Try to serve the file, but don't fail if it doesn't exist
+        # Vercel should serve it via the static route
+        static_path = Path("static/dashboard.html")
+        if static_path.exists():
+            return FileResponse(static_path)
+        return {"message": "Dashboard should be served via /static/dashboard.html on Vercel"}
+    
     static_path = Path("static/dashboard.html")
-    if not static_path.exists():
-        # Fallback for Vercel deployment
-        return {"message": "Dashboard not found. Please check static file configuration."}
-    return FileResponse(static_path)
+    if static_path.exists():
+        return FileResponse(static_path)
+    return {"message": "Dashboard not found. Please check static file configuration."}
 
 
 # Mount static files

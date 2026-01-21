@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # Don't fail if .env file doesn't exist (common on Vercel)
+        env_file_required = False
 
 
 @lru_cache
