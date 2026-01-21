@@ -1,6 +1,6 @@
 """
 Vercel serverless function entry point for FastAPI app.
-Optimized for Vercel deployment with error handling.
+Uses mangum to convert ASGI app to AWS Lambda/API Gateway format for Vercel.
 """
 import sys
 import os
@@ -20,9 +20,11 @@ _init_traceback = None
 
 try:
     from app.main import app
-    # Vercel Python runtime expects the app to be accessible as 'handler'
-    # For FastAPI, we can use the ASGI app directly
-    handler = app
+    from mangum import Mangum
+    
+    # Wrap FastAPI ASGI app with Mangum for Vercel/AWS Lambda compatibility
+    handler = Mangum(app, lifespan="off")
+    
 except Exception as e:
     # Store error for later use
     _init_error = e
@@ -32,6 +34,7 @@ except Exception as e:
     try:
         from fastapi import FastAPI
         from fastapi.responses import JSONResponse
+        from mangum import Mangum
         
         error_app = FastAPI(title="Error Handler")
         
@@ -76,15 +79,15 @@ except Exception as e:
                 }
             )
         
-        handler = error_app
+        handler = Mangum(error_app, lifespan="off")
     except Exception as fallback_error:
-        # If even FastAPI import fails, create a minimal WSGI-compatible handler
-        def minimal_handler(environ, start_response):
-            status = '500 Internal Server Error'
-            headers = [('Content-Type', 'application/json')]
-            body = f'{{"error": "Critical initialization failure", "init_error": "{str(_init_error)}", "fallback_error": "{str(fallback_error)}", "traceback": "{_init_traceback}"}}'
-            start_response(status, headers)
-            return [body.encode('utf-8')]
+        # If even FastAPI import fails, create a minimal handler
+        def minimal_handler(event, context):
+            return {
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": f'{{"error": "Critical initialization failure", "init_error": "{str(_init_error)}", "fallback_error": "{str(fallback_error)}", "traceback": "{_init_traceback}"}}'
+            }
         
         handler = minimal_handler
 
