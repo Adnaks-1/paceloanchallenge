@@ -52,9 +52,10 @@ class EmailGenerationRequest(BaseModel):
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint."""
+    import os
     return HealthResponse(
         status="healthy",
-        message="Chatbot is running"
+        message=f"Chatbot is running (Vercel: {os.getenv('VERCEL', 'false')})"
     )
 
 
