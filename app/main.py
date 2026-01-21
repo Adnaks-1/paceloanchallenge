@@ -176,6 +176,8 @@ async def analyze_contact(contact_id: int):
         # Check cache first
         cached_result = get_cached_analysis(contact_id)
         if cached_result:
+            # Mark as cached for client-side display
+            cached_result["cached"] = True
             return cached_result
         
         # Fetch contact details
