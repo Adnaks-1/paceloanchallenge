@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/static/plglogo.png",
+      "dest": "/api/index.py"
+    },
+    {
       "src": "/static/(.*)",
       "dest": "static/$1",
       "headers": {

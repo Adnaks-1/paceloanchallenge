@@ -400,6 +400,29 @@ async def serve_dashboard():
     return {"message": "Dashboard not found. Please check static file configuration."}
 
 
+@app.get("/static/plglogo.png")
+async def serve_logo():
+    """Serve the PLG logo."""
+    logo_path = Path("static/plglogo.png")
+    if logo_path.exists():
+        from fastapi.responses import Response
+        import mimetypes
+        mime_type, _ = mimetypes.guess_type(str(logo_path))
+        with open(logo_path, "rb") as f:
+            content = f.read()
+        return Response(content=content, media_type=mime_type or "image/png")
+    # Fallback: try root directory
+    logo_path = Path("plglogo.png")
+    if logo_path.exists():
+        from fastapi.responses import Response
+        import mimetypes
+        mime_type, _ = mimetypes.guess_type(str(logo_path))
+        with open(logo_path, "rb") as f:
+            content = f.read()
+        return Response(content=content, media_type=mime_type or "image/png")
+    raise HTTPException(status_code=404, detail="Logo not found")
+
+
 # Mount static files
 # Note: On Vercel, static files are served directly via vercel.json routes
 # This mount is kept for local development
