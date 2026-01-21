@@ -199,11 +199,12 @@ async def analyze_contact(contact_id: int):
             "contact_id": contact_id,
             "contact_name": f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip(),
             "analysis": analysis,
-            "cached": False
+            "cached": False  # This is a new analysis, not cached
         }
         
-        # Cache the result
-        cache_analysis(contact_id, result)
+        # Cache the result (without the cached flag for future lookups)
+        cache_result = result.copy()
+        cache_analysis(contact_id, cache_result)
         
         return result
     except Exception as e:

@@ -2620,7 +2620,8 @@
         function displayAnalysis(data, modalTitle, modalBody) {
             const analysis = data.analysis;
             const contactName = data.contact_name;
-            const isCached = data.cached === false ? false : true;
+            // Check if this result was cached (either from server cache or sessionStorage)
+            const isCached = data.cached !== false; // Default to true if not explicitly false
 
             modalTitle.textContent = `AI Analysis: ${contactName}`;
 
