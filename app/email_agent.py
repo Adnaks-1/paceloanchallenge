@@ -1,8 +1,10 @@
 """Email Generation Agent - AI-powered personalized email writing for C-PACE outreach."""
 
-from typing import TypedDict, Optional, Literal
+from typing import Optional, Literal
 from openai import OpenAI
 from pathlib import Path
+import json
+from pydantic import BaseModel, ValidationError
 
 from app.config import get_settings
 
@@ -31,12 +33,20 @@ def create_llm() -> OpenAI:
     )
 
 
-class GeneratedEmail(TypedDict):
+class EmailOutput(BaseModel):
+    """Validated JSON structure for email outputs."""
+    subject_line: str
+    email_body: str
+    sales_notes: str
+    focus_type: EmailFocusType
+
+
+class GeneratedEmail(BaseModel):
     """Structure for generated email results."""
     subject_line: str
     email_body: str
     sales_notes: str
-    focus_type: str
+    focus_type: EmailFocusType
     raw_response: str
 
 
@@ -160,25 +170,7 @@ def generate_email(
     contact_prompt = format_contact_for_email(contact, focus_type, events, messages)
     
     # Build the generation prompt
-    user_prompt = f"""Generate a personalized outreach email for this contact:
-
-{contact_prompt}
-
-Write the email in this exact format:
-
-**SUBJECT LINE:** [Your subject line here]
-
-**EMAIL BODY:**
-[Complete email here]
-
-**NOTES FOR SALES REP:** [Any helpful context or follow-up suggestions]
-
-Remember:
-- Keep the email under 150 words
-- Make it personal and specific to their situation
-- Use a warm, consultative tone
-- Include one clear, low-pressure call-to-action
-- Reference specific details from their profile"""
+    user_prompt = _build_email_prompt(contact_prompt)
 
     # Call the LLM
     response = client.chat.completions.create(
@@ -188,85 +180,104 @@ Remember:
             {"role": "user", "content": user_prompt}
         ],
         max_tokens=800,
-        temperature=0.7,  # Slightly higher for creative writing
+        temperature=0.3,
     )
     
     raw_response = response.choices[0].message.content.strip()
     
-    # Parse the response
-    return parse_email_response(raw_response, focus_type)
-
-
-def parse_email_response(raw_text: str, focus_type: str) -> GeneratedEmail:
-    """Parse the AI response into structured email data."""
-    
-    subject_line = ""
-    email_body = ""
-    sales_notes = ""
-    
-    lines = raw_text.split('\n')
-    current_section = None
-    
-    for line in lines:
-        # Detect sections
-        if 'SUBJECT LINE' in line.upper() and ':' in line:
-            # Extract subject from same line or mark for next lines
-            parts = line.split(':', 1)
-            if len(parts) > 1 and parts[1].strip():
-                subject_line = parts[1].strip().strip('*').strip()
-            current_section = 'subject'
-            continue
-            
-        elif 'EMAIL BODY' in line.upper():
-            current_section = 'body'
-            continue
-            
-        elif 'NOTES FOR SALES' in line.upper() or 'SALES REP' in line.upper():
-            current_section = 'notes'
-            # Check if notes are on same line
-            if ':' in line:
-                parts = line.split(':', 1)
-                if len(parts) > 1 and parts[1].strip():
-                    sales_notes = parts[1].strip()
-            continue
-        
-        # Skip empty lines at section starts
-        if not line.strip():
-            continue
-            
-        # Accumulate content based on current section
-        if current_section == 'subject' and not subject_line:
-            subject_line = line.strip().strip('*').strip()
-            current_section = None  # Subject is single line
-            
-        elif current_section == 'body':
-            if email_body:
-                email_body += '\n' + line
-            else:
-                email_body = line
-                
-        elif current_section == 'notes':
-            if sales_notes:
-                sales_notes += ' ' + line.strip()
-            else:
-                sales_notes = line.strip()
-    
-    # Clean up the email body
-    email_body = email_body.strip()
-    
-    # If parsing failed, try to extract from raw text
-    if not subject_line:
-        subject_line = "C-PACE Financing Opportunity"
-    if not email_body:
-        email_body = raw_text
-    if not sales_notes:
-        sales_notes = "Review the email and personalize further before sending."
-    
+    try:
+        parsed = parse_email_json(raw_response)
+    except ValueError:
+        retry_prompt = _build_email_retry_prompt(contact_prompt)
+        retry = client.chat.completions.create(
+            model=settings.hf_model,
+            messages=[
+                {"role": "system", "content": skills},
+                {"role": "user", "content": retry_prompt}
+            ],
+            max_tokens=800,
+            temperature=0.0,
+        )
+        raw_response = retry.choices[0].message.content.strip()
+        parsed = parse_email_json(raw_response)
     return GeneratedEmail(
-        subject_line=subject_line,
-        email_body=email_body,
-        sales_notes=sales_notes,
-        focus_type=focus_type,
-        raw_response=raw_text
+        subject_line=parsed.subject_line,
+        email_body=parsed.email_body,
+        sales_notes=parsed.sales_notes,
+        focus_type=parsed.focus_type,
+        raw_response=raw_response,
     )
 
+
+def parse_email_json(raw_text: str) -> EmailOutput:
+    """Parse the AI response into validated JSON email data."""
+    if not raw_text:
+        raise ValueError("AI response was empty.")
+    cleaned_text = _extract_json_text(raw_text)
+    try:
+        payload = json.loads(cleaned_text)
+    except json.JSONDecodeError as exc:
+        raise ValueError("AI response was not valid JSON.") from exc
+
+    try:
+        return EmailOutput.model_validate(payload)
+    except ValidationError as exc:
+        raise ValueError("AI response JSON did not match the expected schema.") from exc
+
+
+def _extract_json_text(raw_text: str) -> str:
+    """Extract a JSON object from a raw LLM response."""
+    text = raw_text.strip()
+    if text.startswith("```"):
+        lines = [line for line in text.splitlines() if not line.strip().startswith("```")]
+        return "\n".join(lines).strip()
+    left = text.find("{")
+    right = text.rfind("}")
+    if left != -1 and right != -1 and right > left:
+        return text[left:right + 1]
+    return text
+
+
+def _build_email_prompt(contact_prompt: str) -> str:
+    """Build the email prompt with strict JSON requirements."""
+    return f"""Generate a personalized outreach email for this contact:
+
+{contact_prompt}
+
+Return ONLY a single RFC8259-compliant JSON object with the following keys:
+{{
+  "subject_line": string,
+  "email_body": string,
+  "sales_notes": string,
+  "focus_type": "industry" | "location" | "events" | "social"
+}}
+
+Remember:
+- Keep the email under 150 words
+- Make it personal and specific to their situation
+- Use a warm, consultative tone
+- Include one clear, low-pressure call-to-action
+- Reference specific details from their profile
+- Use double quotes for all keys and strings
+- Do not include markdown, backticks, or commentary outside the JSON
+"""
+
+
+def _build_email_retry_prompt(contact_prompt: str) -> str:
+    """Build a retry prompt that corrects invalid JSON output."""
+    return f"""Your previous response was invalid JSON. Return ONLY valid JSON.
+
+{contact_prompt}
+
+Return ONLY a single JSON object with this schema:
+{{
+  "subject_line": string,
+  "email_body": string,
+  "sales_notes": string,
+  "focus_type": "industry" | "location" | "events" | "social"
+}}
+
+Rules:
+- Use double quotes for all keys and strings.
+- No markdown, no trailing text, JSON only.
+"""

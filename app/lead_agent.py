@@ -3,8 +3,13 @@
 from typing import TypedDict, Optional
 from openai import OpenAI
 from pathlib import Path
+import json
+import logging
+from pydantic import BaseModel, ValidationError
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 def load_lead_qualification_skills() -> str:
@@ -32,6 +37,8 @@ class LeadAnalysis(TypedDict):
     score: int
     level: str  # Strong / Moderate / Weak
     summary: str
+    location_ineligibility: str
+    company_indicators_ineligibility: str
     strengths: list[str]
     concerns: list[str]
     recommended_actions: list[str]
@@ -39,6 +46,19 @@ class LeadAnalysis(TypedDict):
     events_attended: list[dict]
     sustainability_events_count: int
     raw_analysis: str
+
+
+class LeadAnalysisOutput(BaseModel):
+    """Validated JSON structure for lead analysis outputs."""
+    score: int
+    level: str  # Strong / Moderate / Weak
+    summary: str
+    location_ineligibility: str
+    company_indicators_ineligibility: str
+    strengths: list[str]
+    concerns: list[str]
+    recommended_actions: list[str]
+    talking_points: list[str]
 
 
 # Keywords that indicate sustainability-focused events
@@ -156,42 +176,7 @@ def analyze_lead(contact: dict, counts: Optional[dict] = None, events: Optional[
     contact_prompt = format_contact_for_analysis(contact, counts, events)
     
     # Build the analysis prompt
-    user_prompt = f"""Analyze this lead for C-PACE financing qualification:
-
-{contact_prompt}
-
-Based on the C-PACE qualification criteria, provide your analysis in the following format:
-
-**QUALIFICATION SCORE**: [1-10]
-**QUALIFICATION LEVEL**: [Strong/Moderate/Weak]
-
-**SUMMARY**: [2-3 sentence executive summary]
-
-**LOCATION INELIGIBILITY**: [Location ineligibility reason]
-
-**COMPANY INDICATORS INELIGIBILITY**: [Company indicators ineligibility reason]
-
-**KEY STRENGTHS**:
-- [Strength 1]
-- [Strength 2]
-- [etc.]
-
-**KEY CONCERNS**:
-- [Concern 1]
-- [Concern 2]
-- [etc.]
-
-**RECOMMENDED ACTIONS**:
-- [Action 1]
-- [Action 2]
-- [etc.]
-
-**TALKING POINTS FOR SALES**:
-- [Talking point 1]
-- [Talking point 2]
-- [etc.]
-
-Be specific and reference the actual data provided. Focus on actionable insights for the sales team."""
+    user_prompt = _build_analysis_prompt(contact_prompt)
 
     # Call the LLM
     response = client.chat.completions.create(
@@ -201,110 +186,121 @@ Be specific and reference the actual data provided. Focus on actionable insights
             {"role": "user", "content": user_prompt}
         ],
         max_tokens=1024,
-        temperature=0.3,  # Lower temperature for more consistent analysis
+        temperature=0.2,
     )
     
     raw_analysis = response.choices[0].message.content.strip()
     
-    # Parse the response and add events data
-    analysis = parse_analysis_response(raw_analysis)
-    analysis['events_attended'] = events or []
-    analysis['sustainability_events_count'] = len(sustainability_events)
+    try:
+        parsed = parse_analysis_json(raw_analysis)
+    except ValueError:
+        retry_prompt = _build_analysis_retry_prompt(contact_prompt)
+        retry = client.chat.completions.create(
+            model=settings.hf_model,
+            messages=[
+                {"role": "system", "content": skills},
+                {"role": "user", "content": retry_prompt}
+            ],
+            max_tokens=1024,
+            temperature=0.0,
+        )
+        raw_analysis = retry.choices[0].message.content.strip()
+        parsed = parse_analysis_json(raw_analysis)
+    analysis: LeadAnalysis = {
+        "score": parsed.score,
+        "level": parsed.level,
+        "summary": parsed.summary,
+        "location_ineligibility": parsed.location_ineligibility,
+        "company_indicators_ineligibility": parsed.company_indicators_ineligibility,
+        "strengths": parsed.strengths,
+        "concerns": parsed.concerns,
+        "recommended_actions": parsed.recommended_actions,
+        "talking_points": parsed.talking_points,
+        "events_attended": events or [],
+        "sustainability_events_count": len(sustainability_events),
+        "raw_analysis": raw_analysis,
+    }
     
     return analysis
 
 
-def parse_analysis_response(raw_text: str) -> LeadAnalysis:
-    """Parse the AI response into structured data."""
-    
-    # Default values
-    score = 5
-    level = "Moderate"
-    summary = ""
-    strengths = []
-    concerns = []
-    recommended_actions = []
-    talking_points = []
-    
-    lines = raw_text.split('\n')
-    current_section = None
-    
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-            
-        # Parse score
-        if 'QUALIFICATION SCORE' in line.upper():
-            try:
-                # Extract number from line
-                import re
-                numbers = re.findall(r'\d+', line)
-                if numbers:
-                    score = min(10, max(1, int(numbers[0])))
-            except:
-                pass
-                
-        # Parse level
-        elif 'QUALIFICATION LEVEL' in line.upper():
-            if 'STRONG' in line.upper():
-                level = "Strong"
-            elif 'WEAK' in line.upper():
-                level = "Weak"
-            else:
-                level = "Moderate"
-                
-        # Parse summary
-        elif 'SUMMARY' in line.upper() and ':' in line:
-            summary = line.split(':', 1)[1].strip()
-            current_section = 'summary'
-            
-        # Detect sections
-        elif 'KEY STRENGTHS' in line.upper():
-            current_section = 'strengths'
-        elif 'KEY CONCERNS' in line.upper():
-            current_section = 'concerns'
-        elif 'RECOMMENDED ACTIONS' in line.upper():
-            current_section = 'actions'
-        elif 'TALKING POINTS' in line.upper():
-            current_section = 'talking'
-            
-        # Parse bullet points
-        elif line.startswith('-') or line.startswith('•') or line.startswith('*'):
-            item = line.lstrip('-•* ').strip()
-            if item:
-                if current_section == 'strengths':
-                    strengths.append(item)
-                elif current_section == 'concerns':
-                    concerns.append(item)
-                elif current_section == 'actions':
-                    recommended_actions.append(item)
-                elif current_section == 'talking':
-                    talking_points.append(item)
-                    
-        # Continue summary if on that section
-        elif current_section == 'summary' and not any(x in line.upper() for x in ['STRENGTHS', 'CONCERNS', 'ACTIONS', 'TALKING']):
-            if summary:
-                summary += ' ' + line
-            else:
-                summary = line
-    
-    # If summary is still empty, try to extract from raw text
-    if not summary and raw_text:
-        # Take first meaningful paragraph
-        paragraphs = [p.strip() for p in raw_text.split('\n\n') if p.strip() and not p.strip().startswith('**')]
-        if paragraphs:
-            summary = paragraphs[0][:500]
-    
-    return LeadAnalysis(
-        score=score,
-        level=level,
-        summary=summary or "Analysis completed. See details below.",
-        strengths=strengths or ["Data analysis in progress"],
-        concerns=concerns or ["No specific concerns identified"],
-        recommended_actions=recommended_actions or ["Review lead details"],
-        talking_points=talking_points or ["Discuss C-PACE financing options"],
-        events_attended=[],  # Will be populated by analyze_lead
-        sustainability_events_count=0,  # Will be populated by analyze_lead
-    )
+def parse_analysis_json(raw_text: str) -> LeadAnalysisOutput:
+    """Parse the AI response into validated JSON analysis data."""
+    if not raw_text:
+        raise ValueError("AI response was empty.")
+    cleaned_text = _extract_json_text(raw_text)
+    try:
+        payload = json.loads(cleaned_text)
+    except json.JSONDecodeError as exc:
+        logger.warning("AI analysis JSON parse failed. Response: %s", raw_text[:2000])
+        raise ValueError("AI response was not valid JSON.") from exc
 
+    try:
+        return LeadAnalysisOutput.model_validate(payload)
+    except ValidationError as exc:
+        logger.warning("AI analysis JSON validation failed. Response: %s", raw_text[:2000])
+        raise ValueError("AI response JSON did not match the expected schema.") from exc
+
+
+def _extract_json_text(raw_text: str) -> str:
+    """Extract a JSON object from a raw LLM response."""
+    text = raw_text.strip()
+    if text.startswith("```"):
+        # Strip Markdown code fences like ```json ... ```
+        lines = [line for line in text.splitlines() if not line.strip().startswith("```")]
+        return "\n".join(lines).strip()
+    left = text.find("{")
+    right = text.rfind("}")
+    if left != -1 and right != -1 and right > left:
+        return text[left:right + 1]
+    return text
+
+
+def _build_analysis_prompt(contact_prompt: str) -> str:
+    """Build the analysis prompt with strict JSON requirements."""
+    return f"""Analyze this lead for C-PACE financing qualification:
+
+{contact_prompt}
+
+Return ONLY a single RFC8259-compliant JSON object with the following keys:
+{{
+  "score": number (1-10),
+  "level": "Strong" | "Moderate" | "Weak",
+  "summary": string,
+  "location_ineligibility": string,
+  "company_indicators_ineligibility": string,
+  "strengths": [string, ...],
+  "concerns": [string, ...],
+  "recommended_actions": [string, ...],
+  "talking_points": [string, ...]
+}}
+
+Rules:
+- Use double quotes for all keys and strings.
+- Do not include markdown, backticks, or commentary outside the JSON.
+"""
+
+
+def _build_analysis_retry_prompt(contact_prompt: str) -> str:
+    """Build a retry prompt that corrects invalid JSON output."""
+    return f"""Your previous response was invalid JSON. Return ONLY valid JSON.
+
+{contact_prompt}
+
+Return ONLY a single JSON object with this schema:
+{{
+  "score": number (1-10),
+  "level": "Strong" | "Moderate" | "Weak",
+  "summary": string,
+  "location_ineligibility": string,
+  "company_indicators_ineligibility": string,
+  "strengths": [string, ...],
+  "concerns": [string, ...],
+  "recommended_actions": [string, ...],
+  "talking_points": [string, ...]
+}}
+
+Rules:
+- Use double quotes for all keys and strings.
+- No markdown, no trailing text, JSON only.
+"""

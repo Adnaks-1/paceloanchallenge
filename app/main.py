@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Path as ApiPath, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 from pathlib import Path
 import uuid
+import httpx
 
 from app.agent import chat
 from app.session_store import session_store
@@ -43,7 +44,20 @@ class HealthResponse(BaseModel):
 
 class EmailGenerationRequest(BaseModel):
     """Email generation request payload."""
-    focus_type: str  # industry, location, events, social
+    focus_type: EmailFocusType  # industry, location, events, social
+
+
+def _raise_crm_http_error(exc: Exception) -> None:
+    """Translate CRM client errors into HTTP responses."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        status_code = exc.response.status_code
+        detail = exc.response.text or "CRM API error"
+        raise HTTPException(status_code=status_code, detail=detail)
+    if isinstance(exc, httpx.TimeoutException):
+        raise HTTPException(status_code=504, detail="CRM API timeout")
+    if isinstance(exc, httpx.RequestError):
+        raise HTTPException(status_code=502, detail="CRM API request failed")
+    raise HTTPException(status_code=500, detail=f"CRM API error: {str(exc)}")
 
 
 # ==================== #
@@ -112,11 +126,11 @@ async def get_contacts(
         )
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"CRM API error: {str(e)}")
+        _raise_crm_http_error(e)
 
 
 @app.get("/api/contacts/{contact_id}")
-async def get_contact(contact_id: int):
+async def get_contact(contact_id: int = ApiPath(..., ge=1)):
     """
     Get detailed information about a specific contact.
     
@@ -126,11 +140,11 @@ async def get_contact(contact_id: int):
         data = await crm_client.get_contact(contact_id)
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"CRM API error: {str(e)}")
+        _raise_crm_http_error(e)
 
 
 @app.get("/api/contacts/{contact_id}/messages")
-async def get_contact_messages(contact_id: int):
+async def get_contact_messages(contact_id: int = ApiPath(..., ge=1)):
     """
     Get social media posts and blog posts for a specific contact.
     """
@@ -138,11 +152,11 @@ async def get_contact_messages(contact_id: int):
         data = await crm_client.get_contact_messages(contact_id)
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"CRM API error: {str(e)}")
+        _raise_crm_http_error(e)
 
 
 @app.get("/api/contacts/{contact_id}/events")
-async def get_contact_events(contact_id: int):
+async def get_contact_events(contact_id: int = ApiPath(..., ge=1)):
     """
     Get events attended by a specific contact.
     """
@@ -150,7 +164,7 @@ async def get_contact_events(contact_id: int):
         data = await crm_client.get_contact_events(contact_id)
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"CRM API error: {str(e)}")
+        _raise_crm_http_error(e)
 
 
 # ==================== #
@@ -158,7 +172,7 @@ async def get_contact_events(contact_id: int):
 # ==================== #
 
 @app.post("/api/contacts/{contact_id}/analyze")
-async def analyze_contact(contact_id: int):
+async def analyze_contact(contact_id: int = ApiPath(..., ge=1)):
     """
     Analyze a contact using AI for C-PACE lead qualification.
     
@@ -181,7 +195,10 @@ async def analyze_contact(contact_id: int):
             return cached_result
         
         # Fetch contact details
-        contact_data = await crm_client.get_contact(contact_id)
+        try:
+            contact_data = await crm_client.get_contact(contact_id)
+        except Exception as e:
+            _raise_crm_http_error(e)
         contact = contact_data.get("data", contact_data)
         counts = contact_data.get("counts", {})
         
@@ -195,7 +212,10 @@ async def analyze_contact(contact_id: int):
             pass
         
         # Run AI analysis with events data
-        analysis = analyze_lead(contact, counts, events)
+        try:
+            analysis = analyze_lead(contact, counts, events)
+        except ValueError as e:
+            raise HTTPException(status_code=502, detail=f"AI response error: {str(e)}")
         
         result = {
             "contact_id": contact_id,
@@ -209,6 +229,8 @@ async def analyze_contact(contact_id: int):
         cache_analysis(contact_id, cache_result)
         
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
 
@@ -218,7 +240,10 @@ async def analyze_contact(contact_id: int):
 # ==================== #
 
 @app.post("/api/contacts/{contact_id}/generate-email")
-async def generate_contact_email(contact_id: int, request: EmailGenerationRequest):
+async def generate_contact_email(
+    contact_id: int = ApiPath(..., ge=1),
+    request: EmailGenerationRequest = Body(...)
+):
     """
     Generate a personalized outreach email for a contact.
     
@@ -233,17 +258,13 @@ async def generate_contact_email(contact_id: int, request: EmailGenerationReques
     - Email body (ready to copy)
     - Notes for sales rep
     """
-    # Validate focus type
-    valid_focus_types = ["industry", "location", "events", "social"]
-    if request.focus_type not in valid_focus_types:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Invalid focus_type. Must be one of: {valid_focus_types}"
-        )
     
     try:
         # Fetch contact details
-        contact_data = await crm_client.get_contact(contact_id)
+        try:
+            contact_data = await crm_client.get_contact(contact_id)
+        except Exception as e:
+            _raise_crm_http_error(e)
         contact = contact_data.get("data", contact_data)
         counts = contact_data.get("counts", {})
         
@@ -361,12 +382,15 @@ async def generate_contact_email(contact_id: int, request: EmailGenerationReques
                 pass
         
         # Generate the email
-        email = generate_email(
-            contact=contact,
-            focus_type=request.focus_type,
-            events=events,
-            messages=messages
-        )
+        try:
+            email = generate_email(
+                contact=contact,
+                focus_type=request.focus_type,
+                events=events,
+                messages=messages
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=502, detail=f"AI response error: {str(e)}")
         
         return {
             "contact_id": contact_id,
@@ -374,6 +398,8 @@ async def generate_contact_email(contact_id: int, request: EmailGenerationReques
             "contact_email": contact.get('email', ''),
             "email": email
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Email generation error: {str(e)}")
 
