@@ -12,14 +12,44 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 
-def load_lead_qualification_skills() -> str:
-    """Load the lead qualification skills/instructions from markdown file."""
-    skills_path = Path("lead_qualification_skills.md")
-    
-    if not skills_path.exists():
-        return "You are a lead qualification specialist for C-PACE financing."
-    
-    return skills_path.read_text()
+def load_lead_qualification_skills(include_sections: list[str] | None = None) -> str:
+    """Load lead qualification skills from JSON (preferred) or markdown.
+
+    JSON allows context management: pass include_sections to inject only
+    the sections you need (e.g. omit "state_eligibility" or "examples" when
+    near token limits). Default order: persona, what_is_cpace, qualification_criteria,
+    state_eligibility, output_format, guidelines, examples.
+    """
+    json_path = Path("lead_qualification_skills.json")
+    md_path = Path("lead_qualification_skills.md")
+
+    if json_path.exists():
+        try:
+            data = json.loads(json_path.read_text())
+            if not isinstance(data, dict):
+                raise ValueError("Expected a JSON object")
+            # Default: all sections in fixed order
+            section_order = [
+                "persona", "what_is_cpace", "qualification_criteria",
+                "state_eligibility", "output_format", "guidelines", "examples"
+            ]
+            keys = include_sections if include_sections is not None else section_order
+            parts = []
+            for k in keys:
+                if k in data and data[k]:
+                    parts.append(data[k].strip())
+            return "\n\n---\n\n".join(parts) if parts else _fallback_skills()
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning("Failed to load lead_qualification_skills.json: %s; falling back to .md", e)
+
+    if md_path.exists():
+        return md_path.read_text()
+    return _fallback_skills()
+
+
+def _fallback_skills() -> str:
+    """Minimal system prompt when no skills file is present."""
+    return "You are a lead qualification specialist for C-PACE financing."
 
 
 def create_llm() -> OpenAI:

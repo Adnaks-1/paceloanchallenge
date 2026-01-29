@@ -4,23 +4,55 @@ from typing import Optional, Literal
 from openai import OpenAI
 from pathlib import Path
 import json
+import logging
 from pydantic import BaseModel, ValidationError
 
 from app.config import get_settings
 
+logger = logging.getLogger(__name__)
 
 # Email focus types
 EmailFocusType = Literal["industry", "location", "events", "social"]
 
+# Default section order for JSON skills (for context management)
+EMAIL_SKILLS_SECTION_ORDER = [
+    "persona", "tone_guidelines", "focus_types", "templates",
+    "writing_guidelines", "output_format", "example"
+]
 
-def load_email_generation_skills() -> str:
-    """Load the email generation skills/instructions from markdown file."""
-    skills_path = Path("email_generation_skills.md")
-    
-    if not skills_path.exists():
-        return "You are an email copywriter for C-PACE financing outreach."
-    
-    return skills_path.read_text()
+
+def load_email_generation_skills(include_sections: list[str] | None = None) -> str:
+    """Load email generation skills from JSON (preferred) or markdown.
+
+    JSON allows context management: pass include_sections to inject only
+    the sections you need (e.g. omit \"templates\" or \"example\" when
+    near token limits).
+    """
+    json_path = Path("email_generation_skills.json")
+    md_path = Path("email_generation_skills.md")
+
+    if json_path.exists():
+        try:
+            data = json.loads(json_path.read_text())
+            if not isinstance(data, dict):
+                raise ValueError("Expected a JSON object")
+            keys = include_sections if include_sections is not None else EMAIL_SKILLS_SECTION_ORDER
+            parts = []
+            for k in keys:
+                if k in data and data[k]:
+                    parts.append(data[k].strip())
+            return "\n\n---\n\n".join(parts) if parts else _fallback_email_skills()
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning("Failed to load email_generation_skills.json: %s; falling back to .md", e)
+
+    if md_path.exists():
+        return md_path.read_text()
+    return _fallback_email_skills()
+
+
+def _fallback_email_skills() -> str:
+    """Minimal system prompt when no skills file is present."""
+    return "You are an email copywriter for C-PACE financing outreach."
 
 
 def create_llm() -> OpenAI:
